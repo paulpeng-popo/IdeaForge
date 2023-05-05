@@ -1,0 +1,225 @@
+.visible-scrollbar {
+    display: block;
+    overflow: auto;
+    height: 670px;
+}
+
+.card {
+    width: 20%;
+    height: 100%;
+    position: absolute;
+    /* bottom: 25px; */
+    right: 0px;
+}
+
+.window {
+    position: absolute;
+    width: calc(100% - 10px);
+    max-width: 1250px;
+    height: 700px;
+    border-radius: 10px;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    box-shadow: 0 10px 20px #00000026;
+    /* background-color: #b13c3c; */
+    overflow: hidden;
+}
+
+.bg-red {
+    background-color: rgba(248, 126, 126, 0.658);
+}
+
+.bg-gray {
+    background-color: rgba(226, 225, 225, 0.807);
+}
+
+.bottom_wrapper {
+    position: relative;
+    width: 78%;
+    background-color: #fff;
+    padding: 20px 20px;
+    position: absolute;
+    bottom: 0;
+    height: 70px;
+
+}
+
+.bottom_wrapper .left {
+    position: relative;
+    width: 150px;
+    height: 50px;
+    background-color: #fffefe;
+    /* padding: 5px 5px; */
+    position: absolute;
+    bottom: 5px;
+    right: 800px;
+
+}
+
+.bottom_wrapper .message_input_wrapper {
+    display: inline-block;
+    width: 100%;
+    height: 45px;
+    border-radius: 25px;
+    border: 1px solid #bcbdc0;
+    width: calc(100% - 300px);
+    position: relative;
+    padding: 8px 20px;
+    font-size: 13pt;
+    right: -160px;
+    bottom: 5px;
+}
+
+.bottom_wrapper .message_input_wrapper .message_input {
+    border: none;
+    height: 100%;
+    box-sizing: border-box;
+    width: calc(100% - 40px);
+    position: absolute;
+    outline-width: 0;
+    color: gray;
+}
+
+/* 送出 */
+.bottom_wrapper .send_message {
+    position: absolute;
+    width: 80px;
+    height: 45px;
+    display: block;
+    border-radius: 50px;
+    background-color: #a3d063;
+    border: 2px solid #a3d063;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s linear;
+    text-align: center;
+    float: right;
+    font-size: 14px;
+    right: 160px;
+    bottom: 10px;
+}
+
+.bottom_wrapper .send_message:hover {
+    color: #a3d063;
+    background-color: #fff;
+}
+
+.bottom_wrapper .send_message .text {
+    font-size: 18px;
+    font-weight: 300;
+    display: inline-block;
+    line-height: 48px;
+}
+
+.message_template {
+    display: none;
+}
+
+.bottom_wrapper .left .switch_demo {
+    position: relative;
+    width: 80px;
+    /* height: 20px; */
+    /* -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none; */
+    right: -70px;
+    bottom: 0px;
+
+}
+
+.bottom_wrapper .left .switch_demo-checkbox {
+    display: none;
+}
+
+.bottom_wrapper .left .switch_demo-label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid #999999;
+    height: 45px;
+    border-radius: 20px;
+}
+
+
+.bottom_wrapper .left .switch_demo-inner {
+    display: block;
+    width: 200%;
+    margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+
+}
+
+.bottom_wrapper .left .switch_demo-inner:before,
+.bottom_wrapper .left .switch_demo-inner:after {
+    display: block;
+    float: left;
+    width: 50%;
+    height: 45px;
+    padding: 10px;
+    /* line-height: 30px; */
+    font-size: 16px;
+    color: white;
+    font-family: Trebuchet, Arial, sans-serif;
+    font-weight: bold;
+    box-sizing: border-box;
+}
+
+.bottom_wrapper .left .switch_demo-inner:before {
+    content: "開啟";
+    padding-left: 10px;
+    background-color: #a3d2af;
+    color: #FFFFFF;
+
+}
+
+.bottom_wrapper .left .switch_demo-inner:after {
+    content: "關閉";
+    padding-right: 10px;
+    background-color: #EEEEEE;
+    color: #999999;
+    text-align: right;
+}
+
+/* 轉換按鈕 */
+.bottom_wrapper .left .switch_demo-switch {
+    display: block;
+    width: 20px;
+    margin: 6px;
+    background: #ffffff;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 50px;
+    border: 2px solid #999999;
+    border-radius: 50px;
+    transition: all 0.3s ease-in 0s;
+}
+
+.bottom_wrapper .left .switch_demo-checkbox:checked+.switch_demo-label .switch_demo-inner {
+    margin-left: 0;
+}
+
+.bottom_wrapper .left .switch_demo-checkbox:checked+.switch_demo-label .switch_demo-switch {
+    right: 0px;
+}
+
+/* Add some padding inside the card container */
+.container {
+    padding: 2px 16px;
+}
+
+
+
+.box {
+    width: 100%;
+    padding: 20px;
+    margin-block-end: 20px;
+    border: 2px solid white;
+    border-radius: 10px;
+}
+
+/*------------------------------------ image hover transition ------------------------------------*/
+.animate__animated.animate__zoomInDown {
+    --animate-duration: 1.5s;
+}
