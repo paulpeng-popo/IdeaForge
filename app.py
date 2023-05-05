@@ -1,12 +1,12 @@
 import flask
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,render_template
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def home():
-    return "<h1>Flask API</h1>"
+     return render_template("index.html")
 
 @app.route('/api', methods=['GET'])
 def api():

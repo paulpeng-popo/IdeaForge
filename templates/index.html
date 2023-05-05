@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>IdeaForge</title>
+    <!--font awesome-->
+
+    <!-- Bootstrap CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- vue.js -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.37/vue.global.min.js'></script>
+    <!-- axios cdn -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/5941034551.js" crossorigin="anonymous"></script>
+    <!-- import my css -->
+    <link href="static/css/style.css" rel="stylesheet" type="text/css">
+    <!-- import my js -->
+    <link href="static/js/script.js" rel="stylesheet" type="text/css">
+    <!-- import jquery -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <!-- import animate css --> <!-- https://animate.style/#usage -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+
+    <!-- <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script> -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+</head>
+
+<body class="backgound">
+    <div class="container">
+        <div class="row" style="margin: 1pc;">
+            <div class="col-12 text-center">
+                <h2>IdeaForge</h2>
+            </div>
+        </div>
+        <form id="app">
+
+            <!-- 初始畫面 -->
+            <div class="row align-items-center ">
+
+                <!-- <div class="col-12 text-center">
+                    <div class="box">
+                        <h5>本網站提供使用者進行///<br><br>
+                            仍在開發階段，任何言論皆不代表本實驗室立場
+                    </div>
+                </div> -->
+                <div class="window" :class="{ 'bg-red': on_mode, 'bg-gray': !on_mode }">
+
+                    <div class="bottom_wrapper clearfix">
+                        <div class="left">
+                            <template v-if="microphone_onclick">
+                                <button type="button" v-on:click="open_microphone()"
+                                    style='font-size:35px;position:absolute;right:90px;bottom:0px;background-color: rgb(255, 255, 255);border: 1px solid #fbfcff;'>
+                                    <i class="fa fa-microphone"></i>
+                                </button>
+                            </template>
+                            <template v-else>
+                                <button type="button" v-on:click="close_microphone()"
+                                    style='font-size:35px;position:absolute;right:80px;bottom:0px;background-color: rgb(255, 255, 255);border: 1px solid #fbfcff;'><i
+                                        class="fa fa-microphone-slash"></i></button>
+                            </template>
+                            <div class="switch_demo">
+                                <input type="checkbox" name="switch_demo" class="switch_demo-checkbox" id="switch_demo"
+                                    :checked="on_mode" @change="on_mode = !on_mode">
+                                <label class="switch_demo-label" for="switch_demo">
+                                    <span class="switch_demo-inner"></span>
+                                    <span class="switch_demo-switch"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <textarea class="message_input_wrapper" placeholder="輸入問題" id="input"></textarea>
+
+                        <button type="button" class="send_message" id="sendbutton"
+                            v-on:click="input_input()">送出</button>
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" role="button" id="dropdownMenuButton1"
+                                data-bs-toggle="dropdown" aria-expanded="false"
+                                style='font-size:30px;position:absolute;right:50px;bottom:2px;background-color: rgb(255, 255, 255);border: 1px solid #fbfcff;'>
+                                <i class='far fa-comment-alt' style="color: black;"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li>
+                                    <h6 class="dropdown-header">Dropdown header</h6>
+                                </li>
+                                <li><button class="dropdown-item" v-on:click="selectQuestion('1')">Action</button></li>
+                                <li><button class="dropdown-item" v-on:click="selectQuestion('2')">Another
+                                        action</button>
+                                </li>
+                                <li><button class="dropdown-item" v-on:click="selectQuestion('3')">Something else
+                                        here</button></li>
+                                <!-- <li><button class="dropdown-item" v-for="question in questions" v-bind:key="question.id"
+                                        v-on:click="selectQuestion(question)" href="#">[[ question.text]] </button></li> -->
+
+                            </ul>
+                        </div>
+                        <button type="button" v-on:click="repeat()"
+                            style='font-size:40px;position:absolute;right:40px;bottom:-5px;background-color: rgb(255, 255, 255);border: 1px solid #fbfcff;'>
+                            <i class='fas fa-undo'></i>
+                        </button>
+                    </div>
+
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="visible-scrollbar">
+                                <div class="panel panel-default">
+                                    <div class="panel-body">
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+    <br><br>
+
+</body>
+
+
+<!-- vue.js 傳輸資料 -->
+<script>
+    const vm = Vue.createApp({
+        el: '.switch_demo',
+        data() {
+            return {
+                microphone_onclick: false,
+                microphone_onclick2: true,
+                questions: [
+                    { id: 1, text: '你好嗎？' },
+                    { id: 2, text: '今天天氣如何？' },
+                    { id: 3, text: '你喜歡吃什麼？' }
+                ],
+                selectedQuestion: null,
+                on_mode: false,
+                input: "",
+                output: [],
+            }
+        },
+        methods: {
+            open_microphone() {
+                this.microphone_onclick = false
+            },
+            close_microphone() {
+                this.microphone_onclick = true
+            },
+            selectQuestion(question_id) {
+                for (i = 1; i <= this.questions.length; i++) {
+                    if (i == parseInt(question_id)) document.getElementById("input").value = this.questions[i - 1]['text'];
+                }
+            },
+            repeat() {
+                console.log('press repeat')
+
+            },
+            input_input() {
+                // this.output = [];
+                this.input = document.getElementById("input").value;
+                document.getElementById("input").value = ''
+                this.input = this.input.trim();
+                if (this.input == "") return;
+                console.log("input:", this.input);
+                // axios
+                //     .post('/get_coref', { input: this.input })
+                //     .then((response) => {
+                //         console.log("response data:", response.data);
+                //         for (i = 0; i < response.data.length; i++) {
+                //             this.output[i] = response.data[i]
+                //             this.target_num = response.data[i].target_num
+                //         }
+                //         this.submit = true
+                //     })
+                //     .catch(function (error) {
+                //         console.log(error);
+                //     });
+            },
+
+        },
+        delimiters: ['[[', ']]']
+    });
+    vm.mount('#app');
+
+</script>
+
+</html>
