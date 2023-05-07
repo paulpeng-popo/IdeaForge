@@ -10,6 +10,10 @@ from flask import Flask, request, jsonify, render_template
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 AudioPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
 
+# mkdir audio
+if not os.path.exists(AudioPath):
+    os.mkdir(AudioPath)
+
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -38,23 +42,12 @@ def api():
     return jsonify(result)
 
 
-@app.route("/chatroom", methods=["GET"])
-def chatroom():
-    return render_template("chatroom.html")
-
-
-@app.route("/speak", methods=["GET"])
-def speak():
-    return render_template("record.html")
-
-
 @app.route("/recog", methods=["POST"])
 def recog():
     audio_blob = request.data
     recog_client = ASRChineseAPI(audio_blob, AudioPath)
     recog_client.recognize()
     text = recog_client.get_text()
-    print(text)
     return jsonify(text=text)
 
 
