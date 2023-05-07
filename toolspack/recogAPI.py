@@ -41,21 +41,20 @@ class ASRChineseAPI():
 
         audio_data = base64.b64encode(raw_data)
         msg_dict = {
-            "model": "",
-            "lang": "mandarin",
-            "token": 'aaa',
+            "model_name": "DUMMY_NEW",
+            "token": "xxx",
             "audio_data": audio_data,
-            "audio_name": "Temporary"
+            "source": "P"
         }
 
         os.remove(audio_file)
         self.response = requests.post(
-            "http://140.116.245.157:9500/asr", data=msg_dict)
+            "http://140.116.245.149:2802/asr", data=msg_dict)
         self.response = self.response.json()
         
     def get_text(self):
-        response = self.response
-        if response["msg"] == "Success":
-            return response["hyps"]["result"]
+        response = self.response["words"]
+        if len(response) > 0:
+            return response[0].strip().replace(" ", "").replace("<SPOKEN_NOISE>", "")
         else:
             return "ERROR"
