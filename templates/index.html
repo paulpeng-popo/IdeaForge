@@ -40,22 +40,34 @@
                         <div class="cards">
                             <div class="person-card">
                                 <span class="person-icon">
-                                    <i class="fa-solid fa-user fa-4x"></i>
+                                    <div class="member-1">
+                                        <img src="static/images/blue_man.png" alt="人呢" width="130" height="130">
+                                    </div>
+                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
                                 </span>
                             </div>
                             <div class="person-card">
                                 <span class="person-icon">
-                                    <i class="fa-solid fa-user fa-4x"></i>
+                                    <div class="member-2">
+                                        <img src="static/images/pink_man.png" alt="人呢" width="130" height="130">
+                                    </div>
+                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
                                 </span>
                             </div>
                             <div class="person-card">
                                 <span class="person-icon">
-                                    <i class="fa-solid fa-user fa-4x"></i>
+                                    <div class="member-3">
+                                        <img src="static/images/green_man.png" alt="人呢" width="130" height="130">
+                                    </div>
+                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
                                 </span>
                             </div>
                             <div class="person-card">
                                 <span class="person-icon">
-                                    <i class="fa-solid fa-user fa-4x"></i>
+                                    <div class="member-4">
+                                        <img src="static/images/yellow_man.png" alt="人呢" width="130" height="130">
+                                    </div>
+                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
                                 </span>
                             </div>
                         </div>
@@ -65,11 +77,14 @@
             <div class="row align-items-center">
                 <div class="bottom-wrapper">
                     <div class="col-1">
+                        <div class="blank"></div>
+                    </div>
+                    <div class="col-1">
                         <button class="speak-button" v-on:click="microphone_toggle($event)">
                             <i id="microphone_icon" class="fa fa-microphone-slash fa-2x"></i>
                         </button>
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         <div class="switch-container">
                             <input type="checkbox" id="slide_switch" v-on:click="switch_toggle()">
                             <label for="slide_switch" class="switch"></label>
@@ -86,7 +101,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-2">
+                    <div class="col-1">
                         <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle common-button" type="button"
                                 id="dropdown_button" data-bs-toggle="dropdown" aria-haspopup="true"
@@ -105,6 +120,9 @@
                         <button class="repeat-button" v-on:click="repeat($event)">
                             <i class='fa fa-repeat fa-2x'></i>
                         </button>
+                    </div>
+                    <div class="col-1">
+                        <div class="blank"></div>
                     </div>
                 </div>
             </div>
