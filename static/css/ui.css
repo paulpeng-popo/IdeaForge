@@ -32,7 +32,7 @@ body {
 }
 
 .container {
-    margin: 20px auto;
+    margin: 40px auto;
     background-color: #fff;
     border-radius: 10px;
 }
@@ -242,15 +242,20 @@ input[type="text"] {
 
 /* 紅色 */
 .bg-red {
-    background-color: rgba(248, 126, 126, 0.658);
+    background-color: rgb(243, 68, 68);
 }
 
 /* 黑灰色 */
 .bg-gray {
-    background-color: rgba(148, 143, 143, 0.807);
+    background-color: rgb(148, 143, 143, 0.807);
 }
 
 /* 卡其色 */
 .bg-khaki {
-    background-color: rgba(255, 182, 94, 0.658);
+    background-color: rgb(169, 167, 115);
+}
+
+/* 深藍色 */
+.bg-darkblue {
+    background-color: rgb(150, 184, 200);
 }

@@ -52,4 +52,6 @@ def recog():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    HOST = "0.0.0.0"
+    PORT = 6093
+    app.run(host=HOST, port=PORT, debug=True)
