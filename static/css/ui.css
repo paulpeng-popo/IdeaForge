@@ -10,8 +10,8 @@
 .repeat-button {
     font-size: 40px;
     position: absolute;
-    right: 40px;
-    bottom: -5px;
+    right: 80px;
+    bottom: 0px;
     background-color: rgb(255, 255, 255);
     border: 1px solid #fbfcff;
 }
@@ -19,8 +19,8 @@
 .dropdown-toggle {
     font-size: 30px;
     position: absolute;
-    right: 50px;
-    bottom: 2px;
+    right: 80px;
+    bottom: 1px;
     background-color: rgb(255, 255, 255);
     border: 1px solid #fbfcff;
 }
@@ -37,7 +37,7 @@
 
 .card {
     width: 20%;
-    height: 100%;
+    height: 110%;
     position: absolute;
     /* bottom: 25px; */
     right: 5px;
@@ -67,11 +67,11 @@
     position: relative;
     width: 150px;
     height: 50px;
-    background-color: #fffefe;
+    background-color: #ffffff;
     /* padding: 5px 5px; */
     position: absolute;
     bottom: 5px;
-    right: 800px;
+    right: 930px;
 
 }
 
@@ -85,7 +85,7 @@
     position: relative;
     padding: 8px 20px;
     font-size: 13pt;
-    right: -160px;
+    right: -125px;
     bottom: 5px;
 }
 
@@ -114,7 +114,7 @@
     text-align: center;
     float: right;
     font-size: 14px;
-    right: 160px;
+    right: 185px;
     bottom: 10px;
 }
 
@@ -224,7 +224,7 @@
 
 /* Add some padding inside the card container */
 .container {
-    padding: 2px 16px;
+    padding: 2px;
 }
 
 
