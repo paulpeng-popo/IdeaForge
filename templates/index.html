@@ -24,8 +24,9 @@
     <div class="container">
         <form id="app">
             <div class="row align-items-center" :class="{ 'bg-red': on_mode, 'bg-gray': !on_mode }">
-                <img v-if="on_mode" src="static/images/img1.jpg" style="width: 100%;height: 675px;" alt="一張圖片">
-                <img v-else src="static/images/img2.jpg" style="width: 100%;height: 675px;" alt="一張圖片">
+                <img src="static/images/img1.jpg" style="width: 100%;height: 675px;" alt=" 一張圖片 ">
+                <!-- <img v-else src="static/images/img2.jpg" style="width: 100%;height: 700px;" alt="一張圖片"> -->
+                <!-- position: absolute;right: 80px;bottom:10px; -->
                 <div class="bottom_wrapper clearfix">
                     <div class="left">
                         <template v-if="microphone_onclick">
