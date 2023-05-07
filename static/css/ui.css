@@ -1,3 +1,34 @@
+.speak-button {
+    font-size: 35px;
+    position: absolute;
+    right: 90px;
+    bottom: 0px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid #fbfcff;
+}
+
+.repeat-button {
+    font-size: 40px;
+    position: absolute;
+    right: 40px;
+    bottom: -5px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid #fbfcff;
+}
+
+.dropdown-toggle {
+    font-size: 30px;
+    position: absolute;
+    right: 50px;
+    bottom: 2px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid #fbfcff;
+}
+
+.hidden_section {
+    display: none;
+}
+
 .visible-scrollbar {
     display: block;
     overflow: auto;
@@ -11,20 +42,6 @@
     /* bottom: 25px; */
     right: 5px;
     /* top: 10px; */
-}
-
-.window {
-    position: absolute;
-    width: calc(100% - 10px);
-    max-width: 1250px;
-    height: 700px;
-    border-radius: 10px;
-    left: 50%;
-    top: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    box-shadow: 0 10px 20px #00000026;
-    /* background-color: #b13c3c; */
-    overflow: hidden;
 }
 
 .bg-red {
