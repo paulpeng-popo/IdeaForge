@@ -33,7 +33,7 @@ const vm = Vue.createApp({
                     // parse JSON response
                     var response = JSON.parse(xhr.responseText);
                     console.log(response);
-                    document.getElementById("text").value = response.text;
+                    document.getElementById("speech_text").value = response.text;
                 } else {
                     alert('錯誤！請重新錄音');
                 }
@@ -103,8 +103,8 @@ const vm = Vue.createApp({
         },
         send_input(event) {
             event.preventDefault();
-            input_text = document.getElementById("text").value;
-            document.getElementById("text").value = ""
+            input_text = document.getElementById("speech_text").value;
+            document.getElementById("speech_text").value = ""
             input_text = input_text.trim();
             if (input_text == "") return false;
             console.log(input_text);
@@ -130,6 +130,13 @@ const vm = Vue.createApp({
                     console.log("FAILED: " + result);
                     return false;
                 });
+        },
+        member0() {
+            console.log('member-0 click')
+            var myModal = new bootstrap.Modal(document.getElementById('member0Modal'), {
+                keyboard: false
+            })
+            myModal.show()
         },
     },
     delimiters: ['[[', ']]']

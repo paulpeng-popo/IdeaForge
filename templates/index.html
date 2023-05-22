@@ -24,7 +24,7 @@
     <div class="container">
         <form id="app">
             <div class="row align-items-center" :class="{ 'bg-gray': on_mode, 'bg-khaki': !on_mode }">
-                <div class="col-9 character-section">
+                <!-- <div class="col-9 character-section">
                     <div class="marquee-container">
                         <div class="marquee-text">
                             <span>[[ theMode ]]</span>
@@ -34,45 +34,164 @@
                         <img v-if="on_mode" src="static/images/img1.jpg" class="character" alt="人呢">
                         <img v-else src="static/images/img2.jpg" class="character" alt="人呢">
                     </div>
-                </div>
-                <div class="col-3">
-                    <div class="member-section">
-                        <div class="cards">
-                            <div class="person-card">
-                                <span class="person-icon">
-                                    <div class="member-1">
-                                        <img src="static/images/blue_man.png" alt="人呢" width="130" height="130">
-                                    </div>
-                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
-                                </span>
+                </div> -->
+                <!-- <div class="col-11">
+                    <div class="blank"></div>
+                </div> -->
+
+
+
+                <!-- Modal -->
+                <div class="modal fade" id="member0Modal" tabindex="-1" aria-labelledby="member0ModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="member0ModalLabel">Modal title</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
                             </div>
-                            <div class="person-card">
-                                <span class="person-icon">
-                                    <div class="member-2">
-                                        <img src="static/images/pink_man.png" alt="人呢" width="130" height="130">
+                            <div class="modal-body">
+                                <div class="character-section">
+                                    <!-- <div class="marquee-container">
+                                        <div class="marquee-text">
+                                            <span>[[ theMode ]]</span>
+                                        </div>
+                                    </div> -->
+                                    <!-- <div> -->
+                                    <img v-if="on_mode" src="static/images/img1.jpg" class="character" alt="人呢">
+                                    <img v-else src="static/images/img2.jpg" class="character" alt="人呢">
+                                    <!-- </div> -->
+                                </div>
+                                <div class="bottom-wrapper">
+                                    <div class="col-3">
+                                        <div class="blank"></div>
                                     </div>
-                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
-                                </span>
-                            </div>
-                            <div class="person-card">
-                                <span class="person-icon">
-                                    <div class="member-3">
-                                        <img src="static/images/green_man.png" alt="人呢" width="130" height="130">
+                                    <!-- <div class="col-1">
+                                        <button class="speak-button" v-on:click="microphone_toggle($event)">
+                                            <i id="microphone_icon" class="fa fa-microphone-slash fa-2x"></i>
+                                        </button>
                                     </div>
-                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
-                                </span>
-                            </div>
-                            <div class="person-card">
-                                <span class="person-icon">
-                                    <div class="member-4">
-                                        <img src="static/images/yellow_man.png" alt="人呢" width="130" height="130">
+                                    <div class="col-1">
+                                        <div class="switch-container">
+                                            <input type="checkbox" id="slide_switch" v-on:click="switch_toggle()">
+                                            <label for="slide_switch" class="switch"></label>
+                                        </div>
+                                    </div> -->
+                                    <div class="col-6 input-container">
+                                        <div class="input-wrapper">
+                                            <input type="text" placeholder="輸入問題" id="speech_text"
+                                                v-model="selectedQuestion">
+                                            <button class="send-button" v-on:click="send_input($event)">
+                                                <i class="fa-solid fa-paper-plane fa-2x"></i>
+                                            </button>
+                                            <div class="hidden-section">
+                                                <audio id="audio"></audio>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <!-- <i class="fa-solid fa-user fa-4x"></i> -->
-                                </span>
+                                    <!-- <div class="col-1">
+                                        <div class="dropdown">
+                                            <button class="btn btn-secondary dropdown-toggle common-button"
+                                                type="button" id="dropdown_button" data-bs-toggle="dropdown"
+                                                aria-haspopup="true" aria-expanded="false"
+                                                @click="showMenu = !showMenu">
+                                                <i class="fa-solid fa-comment fa-2x"></i>
+                                            </button>
+                                            <div class="dropdown-menu" aria-labelledby="dropdown_button"
+                                                :class="{show: showMenu}">
+                                                <button class="dropdown-item" v-for="(question, index) in questions"
+                                                    :key="question.id" @click="selectQuestion($event, question.id)">
+                                                    [[ question.text ]]
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div> -->
+                                    <div class="col-1">
+                                        <button class="repeat-button" v-on:click="repeat($event)">
+                                            <i class='fa fa-repeat fa-2x'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-1">
+                                        <div class="blank"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="col-11">
+                    <!-- <div class="member-section"> -->
+                    <div class="cards row justify-content-center">
+                        <div class="person-card col-3" v-on:click="member0()">
+                            <span class="person-icon">
+                                <div class="member-0">
+                                    <img src=" static/images/img1.jpg" alt="人呢" width="250" height="250">
+                                </div>
+                                <!-- <i class="fa-solid fa-user fa-4x"></i> -->
+                            </span>
+                        </div>
+                        <div class="person-card col-3">
+                            <span class="person-icon">
+                                <div class="member-1">
+                                    <img src="static/images/blue_man.png" alt="人呢" width="250" height="250">
+                                </div>
+                                <!-- <i class="fa-solid fa-user fa-4x"></i> -->
+                            </span>
+                        </div>
+                        <div class="person-card col-3">
+                            <span class="person-icon">
+                                <div class="member-2">
+                                    <img src="static/images/pink_man.png" alt="人呢" width="250" height="250">
+                                </div>
+                                <!-- <i class="fa-solid fa-user fa-4x"></i> -->
+                            </span>
+                        </div>
+                        <div class="person-card col-3">
+                            <span class="person-icon">
+                                <div class="member-3">
+                                    <img src="static/images/green_man.png" alt="人呢" width="250" height="250">
+                                </div>
+                                <!-- <i class="fa-solid fa-user fa-4x"></i> -->
+                            </span>
+                        </div>
+                        <div class="person-card col-3">
+                            <span class="person-icon">
+                                <div class="member-4">
+                                    <img src="static/images/yellow_man.png" alt="人呢" width="250" height="250">
+                                </div>
+                                <!-- <i class="fa-solid fa-user fa-4x"></i> -->
+                            </span>
+                        </div>
+                        <div class="person-card col-3">
+                            <span class="person-icon">
+                                <div class="member-5">
+                                    <img src="static/images/yellow_man.png" alt="人呢" width="250" height="250">
+                                </div>
+                                <!-- <i class="fa-solid fa-user fa-4x"></i> -->
+                            </span>
+                        </div>
+                    </div>
+                    <!-- </div> -->
+                </div>
+                <div class="col">
+                    <div class="blank"></div>
+                </div>
+                <button class="btn btn-primary chat-room col" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">聊天室</button>
+
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight"
+                    aria-labelledby="offcanvasRightLabel">
+                    <div class="offcanvas-header">
+                        <h5 id="offcanvasRightLabel">Offcanvas right</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        ...
+                    </div>
+                </div>
+
             </div>
             <div class="row align-items-center">
                 <div class="bottom-wrapper">
