@@ -16,6 +16,7 @@ const vm = Vue.createApp({
                 { id: 10, text: "常用10" },
             ],
             selectedQuestion: "",
+            chat_messages: [],
             showMenu: false,
             on_mode: false,
             theMode: "一般討論模式",
@@ -93,6 +94,7 @@ const vm = Vue.createApp({
                     break;
                 }
             }
+            document.getElementById("text").value = this.selectedQuestion
             console.log("選擇的問題: " + this.selectedQuestion);
             this.showMenu = false;
         },
@@ -108,6 +110,7 @@ const vm = Vue.createApp({
             input_text = input_text.trim();
             if (input_text == "") return false;
             console.log(input_text);
+            this.chat_messages.push(input_text)
             $.ajax({
                 method: "POST",
                 url: "/say",
@@ -131,8 +134,47 @@ const vm = Vue.createApp({
                     return false;
                 });
         },
+        send_input_chat(event) {
+            event.preventDefault();
+            input_text = document.getElementById("text").value;
+            document.getElementById("text").value = ""
+            input_text = input_text.trim();
+            if (input_text == "") return false;
+            // console.log(input_text);
+            this.chat_messages.push(input_text)
+            // console.log(this.chat_messages)
+            if (input_text[0] == "@") {
+                console.log("chatGPT mode")
+            }
+            else {
+                console.log("chatRoom mode")
+
+            }
+            // $.ajax({
+            //     method: "POST",
+            //     url: "/say",
+            //     data: {
+            //         "text": input_text
+            //     },
+            //     dataType: "json",
+            // })
+            //     .done(function (result) {
+            //         if (result["status"] == "true") {
+            //             let audio_player = document.getElementById("audio");
+            //             audio_player.src = "data:audio/wav;base64," + result["data"];
+            //             audio_player.play();
+            //         } else {
+            //             console.log("FAILED: " + result);
+            //             return false;
+            //         }
+            //     })
+            //     .fail(function (result) {
+            //         console.log("FAILED: " + result);
+            //         return false;
+            //     });
+        },
         member0() {
-            console.log('member-0 click')
+            // console.log('member-0 click')
             var myModal = new bootstrap.Modal(document.getElementById('member0Modal'), {
                 keyboard: false
             })
