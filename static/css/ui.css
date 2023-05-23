@@ -42,6 +42,31 @@ body {
     width: 10px;
 }
 
+.chat-card {
+    position: relative;
+    background-color: #e6d6d6;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    margin: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.chat-card:hover .repeat-button {
+    display: block;
+    position: absolute;
+    background-color: #fff;
+    color: black;
+    font-size: .8em;
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    right: 10px;
+}
+
 .character-section {
     align-items: center;
     text-align: center;
@@ -86,6 +111,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.person0:hover {
+    cursor: pointer;
+    background-color: #f8bebe;
 }
 
 .person-icon {
@@ -240,9 +270,10 @@ input[type="text"] {
     border-radius: 20px;
     cursor: pointer;
     padding: 10px;
+    display: none;
 }
 
-.repeat-button:hover {
+.chat-card:hover .repeat-button:hover {
     background-color: #e7e7e7;
 }
 

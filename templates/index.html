@@ -39,15 +39,13 @@
                     <div class="blank"></div>
                 </div> -->
 
-
-
-                <!-- Modal -->
+                <!-- 匿名發言 Modal -->
                 <div class="modal fade" id="member0Modal" tabindex="-1" aria-labelledby="member0ModalLabel"
                     aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="member0ModalLabel">Modal title</h5>
+                                <h5 class="modal-title" id="member0ModalLabel">匿名發言</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                     aria-label="Close"></button>
                             </div>
@@ -80,8 +78,7 @@
                                     </div> -->
                                     <div class="col-6 input-container">
                                         <div class="input-wrapper">
-                                            <input type="text" placeholder="輸入問題" id="speech_text"
-                                                v-model="selectedQuestion">
+                                            <input type="text" placeholder="輸入問題" id="speech_text">
                                             <button class="send-button" v-on:click="send_input($event)">
                                                 <i class="fa-solid fa-paper-plane fa-2x"></i>
                                             </button>
@@ -91,27 +88,10 @@
                                         </div>
                                     </div>
                                     <!-- <div class="col-1">
-                                        <div class="dropdown">
-                                            <button class="btn btn-secondary dropdown-toggle common-button"
-                                                type="button" id="dropdown_button" data-bs-toggle="dropdown"
-                                                aria-haspopup="true" aria-expanded="false"
-                                                @click="showMenu = !showMenu">
-                                                <i class="fa-solid fa-comment fa-2x"></i>
-                                            </button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdown_button"
-                                                :class="{show: showMenu}">
-                                                <button class="dropdown-item" v-for="(question, index) in questions"
-                                                    :key="question.id" @click="selectQuestion($event, question.id)">
-                                                    [[ question.text ]]
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div> -->
-                                    <div class="col-1">
                                         <button class="repeat-button" v-on:click="repeat($event)">
                                             <i class='fa fa-repeat fa-2x'></i>
                                         </button>
-                                    </div>
+                                    </div> -->
                                     <div class="col-1">
                                         <div class="blank"></div>
                                     </div>
@@ -120,10 +100,14 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col-11">
                     <!-- <div class="member-section"> -->
                     <div class="cards row justify-content-center">
-                        <div class="person-card col-3" v-on:click="member0()">
+                        <div class="col-1">
+                            <div class="blank"></div>
+                        </div>
+                        <div class="person-card person0 col-3" v-on:click="member0()">
                             <span class="person-icon">
                                 <div class="member-0">
                                     <img src=" static/images/img1.jpg" alt="人呢" width="250" height="250">
@@ -146,6 +130,9 @@
                                 </div>
                                 <!-- <i class="fa-solid fa-user fa-4x"></i> -->
                             </span>
+                        </div>
+                        <div class="col-1">
+                            <div class="blank"></div>
                         </div>
                         <div class="person-card col-3">
                             <span class="person-icon">
@@ -177,25 +164,32 @@
                 <div class="col">
                     <div class="blank"></div>
                 </div>
+
+                <!-- chat room -->
                 <button class="btn btn-primary chat-room col" type="button" data-bs-toggle="offcanvas"
                     data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">聊天室</button>
-
-                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight"
+                <div class="offcanvas offcanvas-end " tabindex="-1" id="offcanvasRight"
                     aria-labelledby="offcanvasRightLabel">
                     <div class="offcanvas-header">
-                        <h5 id="offcanvasRightLabel">Offcanvas right</h5>
+                        <h5 id="offcanvasRightLabel">聊天室</h5>
                         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
                             aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body">
-                        ...
+                        <div class="chat-card" v-for="message in chat_messages">
+                            [[message]]
+                            <!-- <div class="col-1"> -->
+                            <button class="repeat-button" v-on:click="repeat($event)">
+                                <i class='fa fa-repeat fa-2x'></i>
+                            </button>
+                            <!-- </div> -->
+                        </div>
                     </div>
                 </div>
-
             </div>
             <div class="row align-items-center">
                 <div class="bottom-wrapper">
-                    <div class="col-1">
+                    <div class="col-2">
                         <div class="blank"></div>
                     </div>
                     <div class="col-1">
@@ -203,16 +197,16 @@
                             <i id="microphone_icon" class="fa fa-microphone-slash fa-2x"></i>
                         </button>
                     </div>
-                    <div class="col-1">
+                    <!-- <div class="col-1">
                         <div class="switch-container">
                             <input type="checkbox" id="slide_switch" v-on:click="switch_toggle()">
                             <label for="slide_switch" class="switch"></label>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="col-6 input-container">
                         <div class="input-wrapper">
-                            <input type="text" placeholder="輸入問題" id="text" v-model="selectedQuestion">
-                            <button class="send-button" v-on:click="send_input($event)">
+                            <input type="text" placeholder="輸入問題" id="text">
+                            <button class="send-button" v-on:click="send_input_chat($event)">
                                 <i class="fa-solid fa-paper-plane fa-2x"></i>
                             </button>
                             <div class="hidden-section">
@@ -235,12 +229,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-1">
+                    <!-- <div class="col-1">
                         <button class="repeat-button" v-on:click="repeat($event)">
                             <i class='fa fa-repeat fa-2x'></i>
                         </button>
-                    </div>
-                    <div class="col-1">
+                    </div> -->
+                    <div class="col-2">
                         <div class="blank"></div>
                     </div>
                 </div>
