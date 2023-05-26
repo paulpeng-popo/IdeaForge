@@ -1,50 +1,15 @@
-body {
-    background-color: #e5dada;
-}
-
-.marquee-container {
-    overflow: hidden;
-}
-
-.marquee-text {
-    color: red;
-    font-size: 40px;
-    font-weight: bold;
-    display: inline-block;
-    white-space: nowrap;
-    padding-right: 100%;
-    animation: circular-marquee 7s linear infinite;
-}
-
-/* if mouse hover, stop animation */
-.marquee-container:hover .marquee-text {
-    animation-play-state: paused;
-}
-
-@keyframes circular-marquee {
-    0% {
-        transform: translate(-20%, 0);
-    }
-
-    100% {
-        transform: translate(100%, 0);
-    }
-}
-
-.container {
-    margin: 40px auto;
-    background-color: #fff;
-    border-radius: 10px;
-}
-
-.chat-room {
+/* 聊天室 */
+/* .chat-room {
+    position: absolute;
+    top: 40%;
+    right: 45px;
     height: 150px;
-    width: 10px;
-}
+    width: 100px;
+} */
 
 .chat-card {
     position: relative;
-    background-color: #e6d6d6;
+    background-color: #dddada;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     margin: 10px;
@@ -67,67 +32,30 @@ body {
     right: 10px;
 }
 
+.chat-card:hover .repeat-button:hover {
+    background-color: #e7e7e7;
+}
+
+/* 聊天室 */
+
+
+/* 匿名模式 */
 .character-section {
     align-items: center;
     text-align: center;
     background-color: #ccc;
+    height: 500px;
 }
 
 .character {
-    width: 70%;
+    width: 55%;
     height: auto;
 }
 
-.member-section {
-    height: 600px;
-    overflow-y: auto;
-    white-space: nowrap;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 10px;
-    border: 1px solid #837f7f;
-    background-color: #837f7f;
-    box-sizing: border-box;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
+/* 匿名模式 */
 
-/* vertical scroll bar */
-.cards {
-    overflow-y: auto;
-    overflow-x: hidden;
-    white-space: nowrap;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 10px;
-}
 
-.person-card {
-    position: relative;
-    background-color: #e6d6d6;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    margin: 20px;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.person0:hover {
-    cursor: pointer;
-    background-color: #f8bebe;
-}
-
-.person-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 150px;
-    height: 210px;
-    border-radius: 50%;
-    margin: 10px;
-}
-
+/* 功能區 */
 .bottom-wrapper {
     display: flex;
     position: relative;
@@ -153,7 +81,7 @@ body {
     background-color: #e7e7e7;
 }
 
-.switch-container {
+/* .switch-container {
     position: relative;
     display: inline-block;
     width: 60px;
@@ -201,7 +129,7 @@ input:checked+.switch:before {
     -webkit-transform: translateX(26px);
     -ms-transform: translateX(26px);
     transform: translateX(26px);
-}
+} */
 
 .input-container {
     display: flex;
@@ -228,6 +156,7 @@ input[type="text"] {
     border-radius: 20px;
     border-top-left-radius: 20px;
     border-bottom-left-radius: 20px;
+    word-wrap: break-word;
 }
 
 .send-button {
@@ -273,26 +202,90 @@ input[type="text"] {
     display: none;
 }
 
-.chat-card:hover .repeat-button:hover {
-    background-color: #e7e7e7;
-}
+/* 功能區 */
+
 
 /* 紅色 */
 .bg-red {
     background-color: rgb(243, 68, 68);
 }
 
+/* 紅色 */
+
+
 /* 黑灰色 */
 .bg-gray {
     background-color: rgb(148, 143, 143, 0.807);
 }
+
+/* 黑灰色 */
+
 
 /* 卡其色 */
 .bg-khaki {
     background-color: rgb(169, 167, 115);
 }
 
+/* 卡其色 */
+
+
 /* 深藍色 */
 .bg-darkblue {
     background-color: rgb(150, 184, 200);
 }
+
+/* 深藍色 */
+
+
+/* 會議參加者 */
+.attendants {
+    display: flex;
+    flex-direction: column;
+    max-height: 560px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: nowrap;
+    align-items: center;
+    padding: 30px 0;
+}
+
+.person-card {
+    background-color: #ffe0e0;
+    border-radius: 10px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin: 8px;
+    padding: 5px;
+    width: 260px;
+    height: 230px;
+}
+
+.person0:hover {
+    cursor: pointer;
+    background-color: #f8bebe;
+}
+
+.person-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    margin: 10px;
+}
+
+.vertical-center {
+    margin: 0;
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.person-name {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 40px;
+}
+
+/* 會議參加者 */
