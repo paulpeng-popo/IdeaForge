@@ -48,82 +48,43 @@
     </nav>
     <div class="container-sm mt-3">
         <div id="app">
-            <div class="row bg-khaki">
+            <!-- if not idle bg-khaki else bg-red -->
+            <div class="row" :class="{'bg-khaki': !isIdle, 'bg-red': isIdle}">
 
                 <!-- 2x3 cards grid -->
-                <div class="attendants">
-                    <div class="row">
-                        <div class="col-4">
-                            <div class="person-card person0" v-on:click="member0()">
+                <template class="attendee-section">
+                    <div class="row" v-for="members in attendee_rows">
+                        <div :class="member.col_width" v-for="member in members">
+                            <div class="person-card person0" v-if="member.name == '主持人'" v-on:click="member0()">
                                 <div class="person-icon vertical-center">
-                                    <img src="{{ url_for('static', filename='images/img2.jpg') }}" alt="沒人了" width="220"
-                                        height="150" class="d-inline-block align-middle me-3">
+                                    <template v-if="!speaking">
+                                        <img class="robot-pos d-inline-block align-middle me-3"
+                                            src="{{ url_for('static', filename='images/robot_nobg.png') }}" alt="沒人了"
+                                            width="150" height="150">
+                                    </template>
+                                    <template v-else>
+                                        <img class="robot-pos d-inline-block align-middle me-3"
+                                            src="{{ url_for('static', filename='images/robot.gif') }}" alt="沒人了"
+                                            width="150" height="150">
+                                    </template>
                                 </div>
-                                <!-- <i class="fa-solid fa-user fa-4x"></i> -->
                                 <div class="person-name">
-                                    <p>主持人</p>
+                                    <p>[[ member.name ]]</p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="person-card">
+                            <div class="person-card" v-else>
                                 <div class="person-icon vertical-center">
-                                    <img src="{{ url_for('static', filename='images/yellow_man.png') }}" alt="沒人了"
-                                        width="150" height="150" class="d-inline-block align-middle me-3">
+                                    <img :src="member.avatar" alt="沒人了" width="150" height="150"
+                                        class="d-inline-block align-middle me-3">
                                 </div>
                                 <div class="person-name">
-                                    <p>成員1</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="person-card">
-                                <div class="person-icon vertical-center">
-                                    <img src="{{ url_for('static', filename='images/pink_man.png') }}" alt="沒人了"
-                                        width="150" height="150" class="d-inline-block align-middle me-3">
-                                </div>
-                                <div class="person-name">
-                                    <p>成員2</p>
+                                    <p v-if="userName == member.name">[[ member.name ]] (我)</p>
+                                    <p v-else>[[ member.name ]]</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-4">
-                            <div class="person-card">
-                                <div class="person-icon vertical-center">
-                                    <img src="{{ url_for('static', filename='images/green_man.png') }}" alt="沒人了"
-                                        width="150" height="150" class="d-inline-block align-middle me-3">
-                                </div>
-                                <div class="person-name">
-                                    <p>成員3</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="person-card">
-                                <div class="person-icon vertical-center">
-                                    <img src="{{ url_for('static', filename='images/blue_man.png') }}" alt="沒人了"
-                                        width="150" height="150" class="d-inline-block align-middle me-3">
-                                </div>
-                                <div class="person-name">
-                                    <p>成員4</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="person-card">
-                                <div class="person-icon vertical-center">
-                                    <img src="{{ url_for('static', filename='images/blue_man.png') }}" alt="沒人了"
-                                        width="150" height="150" class="d-inline-block align-middle me-3">
-                                </div>
-                                <div class="person-name">
-                                    <p>成員5</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </template>
 
                 <!-- 匿名發言 Modal -->
                 <div class="modal fade" id="anonymous" tabindex="-1" aria-labelledby="anonymous_modal"
@@ -137,8 +98,16 @@
                             </div>
                             <div class="modal-body">
                                 <div class="character-section">
-                                    <img class="character" src="{{ url_for('static', filename='images/img1.jpg') }}"
-                                        alt="沒人了" class="d-inline-block align-middle me-3">
+                                    <template v-if="!speaking">
+                                        <img class="character d-inline-block align-middle me-3"
+                                            src="{{ url_for('static', filename='images/robot_nobg.png') }}" alt="沒人了"
+                                            width="500" height="500">
+                                    </template>
+                                    <template v-else>
+                                        <img class="character d-inline-block align-middle me-3"
+                                            src="{{ url_for('static', filename='images/robot.gif') }}" alt="沒人了"
+                                            width="500" height="500">
+                                    </template>
                                 </div>
                                 <div class="bottom-wrapper">
                                     <div class="col input-container">
@@ -167,7 +136,8 @@
                         </div>
                         <div class="offcanvas-body">
                             <div class="chat-card" v-for="message in chat_messages">
-                                [[ message ]]
+                                [[ message.speaker ]]:
+                                [[ message.text ]]
                                 <button class="repeat-button" v-on:click="repeat($event)">
                                     <i class='fa fa-repeat fa-2x'></i>
                                 </button>
