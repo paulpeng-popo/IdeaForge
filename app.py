@@ -107,7 +107,7 @@ def api():
         return jsonify(result)
 
     # use uuid to get unique filename
-    filename = str(uuid.uuid4()) + ".wav"
+    filename = str(uuid.uuid4().hex) + ".wav"
 
     tts_client = TTSCrossLanguage(AudioPath)
     tts_client.set_language(language="zh", speaker="UDN")
@@ -176,10 +176,7 @@ def message(data):
     roomId = data["roomId"]
     say(data["userName"] + ": " + data["message"])
     if roomId not in session["messages"]:
-        session["messages"][roomId] = {
-            "text": [],
-            "audio": []
-        }
+        session["messages"][roomId] = { "text": [] }
     session["messages"][roomId]["text"].append(data)
     emit("message", data, broadcast=True, include_self=False)
 
@@ -217,11 +214,6 @@ def leave(data):
     # send user list to all users in the room
     userList(data)
 
-
-@socketio.on("audio")
-def audio(data):
-    emit("audio", data, broadcast=True, include_self=False)
-        
 
 if __name__ == "__main__":
     HOST = "0.0.0.0"
