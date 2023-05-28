@@ -63,6 +63,7 @@ createApp({
                         sessionStorage.setItem('userName', this.userName);
                         sessionStorage.setItem('roomId', this.roomId);
                         sessionStorage.setItem('expire', Date.now() + 3600000);
+
                         // redirect to room page
                         this.redirectToRoom();
                     }
