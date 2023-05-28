@@ -135,12 +135,14 @@
                                 aria-label="Close"></button>
                         </div>
                         <div class="offcanvas-body">
-                            <div class="chat-card" v-for="message in chat_messages">
-                                [[ message.speaker ]]:
-                                [[ message.text ]]
-                                <button class="repeat-button" v-on:click="repeat($event)">
-                                    <i class='fa fa-repeat fa-2x'></i>
-                                </button>
+                            <div class="row chat-wrapper" v-for="message in chat_messages">
+                                <div class="chat-name">[[ message.speaker ]]:</div>
+                                <div class="chat-card col-10">
+                                    [[ message.text ]]
+                                    <button class="repeat-button" v-on:click="repeat($event)">
+                                        <i class='fa fa-repeat fa-2x'></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
