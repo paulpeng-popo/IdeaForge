@@ -8,17 +8,18 @@ import struct
 import argparse
 
 class TTSCrossLanguage:
-    def __init__(self, path):
+    def __init__(self, path="./"):
         self.__host = "140.116.245.147"
         self.__port = 10000
         self.__token = "mi2stts"
         self.__path = path
 
-    def askForService(self, text:str):
+    def askForService(self, text:str, filename:str):
         '''
         Ask cross language synthesis server.
         Params:
-            text        :(str) Text to be synthesized. 
+            text        :(str) Text to be synthesized.
+            filename    :(str) Filename to be saved.
         '''
         if not len(text):
             raise ValueError ("Length of text must be bigger than zero")
@@ -30,7 +31,7 @@ class TTSCrossLanguage:
             msg = struct.pack(">I", len(msg)) + msg
             sock.sendall(msg)
             
-            filename = os.path.join(self.__path, "output.wav")
+            filename = os.path.join(self.__path, filename)
             with open(filename, "wb") as f:
                 while True:
                     l = sock.recv(8192)
@@ -89,4 +90,4 @@ if __name__=='__main__':
     
     tts_client = TTSCrossLanguage()
     tts_client.set_language(language=args.language, speaker=args.speaker)
-    tts_client.askForService(args.text)
+    tts_client.askForService(args.text, "output.wav")

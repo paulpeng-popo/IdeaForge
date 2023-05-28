@@ -31,18 +31,39 @@ createApp({
         createRoom(event) {
             event.preventDefault();
 
-            console.log(this.userName);
-            console.log(this.roomId);
+            const formData = new FormData();
+            formData.append('type', 'create');
+            formData.append('userName', this.userName);
+            formData.append('roomId', this.roomId);
 
-            // check room id
-            axios.get(`/api/room/${this.roomId}`)
+            this.infoCheck(formData);
+        },
+        joinRoom(event) {
+            event.preventDefault();
+
+            if (!this.checkRoomId()) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('type', 'join');
+            formData.append('userName', this.userName);
+            formData.append('roomId', this.roomId);
+
+            this.infoCheck(formData);
+        },
+        infoCheck(data) {
+            axios.post('/check', data)
                 .then(res => {
                     if (res.data.status == 'false') {
-                        alert('房號已存在，請重新刷新頁面以獲取新的房號');
+                        alert(res.data.message);
                     } else {
                         // save user name and room id to session storage
+                        // and set session storage to expire after 1 hour
                         sessionStorage.setItem('userName', this.userName);
                         sessionStorage.setItem('roomId', this.roomId);
+                        sessionStorage.setItem('expire', Date.now() + 3600000);
+
                         // redirect to room page
                         this.redirectToRoom();
                     }
@@ -55,31 +76,7 @@ createApp({
             setTimeout(() => {
                 // redirect to room page
                 window.location.href = `/room/${this.roomId}`;
-            }, 1000);
-        },
-        joinRoom(event) {
-            event.preventDefault();
-
-            if (!this.checkRoomId()) {
-                return;
-            }
-
-            console.log(this.userName);
-            console.log(this.roomId);
-
-            // check room id
-            axios.get(`/api/room/${this.roomId}`)
-                .then(res => {
-                    if (res.data.status == 'false') {
-                        // save user name and room id to session storage
-                        sessionStorage.setItem('userName', this.userName);
-                        sessionStorage.setItem('roomId', this.roomId);
-                        // redirect to room page
-                        this.redirectToRoom();
-                    } else {
-                        alert('房號不存在，請重新輸入');
-                    }
-                });
+            }, 500);
         },
         checkRoomId() {
             // convert roomId to string
@@ -92,8 +89,21 @@ createApp({
                 return false;
             } else {
                 $('#roomName').get(0).setCustomValidity('');
-                return true;
             }
+
+            // convert userName to string
+            this.userName = this.userName.toString();
+            // ensure user name is not empty
+            if (this.userName == '') {
+                // set custom validation message
+                $('#userName').get(0).setCustomValidity('請輸入暱稱');
+                $('#userName').get(0).reportValidity();
+                return false;
+            } else {
+                $('#userName').get(0).setCustomValidity('');
+            }
+
+            return true;
         }
     },
     delimiters: ['[[', ']]']
