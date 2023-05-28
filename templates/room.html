@@ -97,7 +97,7 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <div class="character-section">
+                                <div class="character-section" :class="{'bg-light-blue': !isIdle, 'bg-red': isIdle}">
                                     <template v-if="!speaking">
                                         <img class="character d-inline-block align-middle me-3"
                                             src="{{ url_for('static', filename='images/robot_nobg.png') }}" alt="沒人了"
@@ -139,7 +139,7 @@
                                 <div class="chat-name">[[ message.speaker ]]:</div>
                                 <div class="chat-card col-10">
                                     [[ message.text ]]
-                                    <button class="repeat-button" v-on:click="repeat($event)">
+                                    <button class="repeat-button" v-on:click="repeat($event, message)">
                                         <i class='fa fa-repeat fa-2x'></i>
                                     </button>
                                 </div>
@@ -173,7 +173,7 @@
                     </div> -->
                     <div class="col-6 input-container">
                         <div class="input-wrapper">
-                            <input type="text" placeholder="@ 想問 ChatGPT 的問題" v-model="outer_text"
+                            <input type="text" placeholder="＠ 想問 ChatGPT 的問題" v-model="outer_text"
                                 @keyup.enter.native="send_outer($event)">
                             <button class="send-button" v-on:click="send_outer($event)" type="button">
                                 <i class="fa-solid fa-paper-plane fa-2x"></i>

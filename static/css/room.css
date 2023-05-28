@@ -60,7 +60,6 @@
 /* 匿名模式 */
 .character-section {
     text-align: center;
-    background-color: rgb(238, 229, 247);
     height: 480px;
     padding: 30px;
 }
@@ -233,6 +232,14 @@ input[type="text"] {
 }
 
 /* 紅色 */
+
+
+/* 淺藍色 */
+.bg-light-blue {
+    background-color: rgb(238, 229, 247);
+}
+
+/* 淺藍色 */
 
 
 /* 卡其色 */

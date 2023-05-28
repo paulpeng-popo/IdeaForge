@@ -180,7 +180,7 @@ def message(data):
             "text": [],
             "audio": []
         }
-    session["messages"][roomId]["text"].append(data["userName"] + ": " + data["message"])
+    session["messages"][roomId]["text"].append(data)
     emit("message", data, broadcast=True, include_self=False)
 
 

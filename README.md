@@ -7,11 +7,10 @@
 - [ffmpeg](https://ffmpeg.org/download.html#build-windows)
 
 ### 線上開會輔助系統
-- [ ] 開會介面
-- [ ] 匿名語音
-- [ ] 說話辨識
-- [ ] 開會主持人 -- ChatGPT
-- [ ] 態度消極警示
+- [X] 開會介面
+- [X] 匿名語音合成
+- [X] 開會主持人 -- ChatGPT
+- [X] 態度消極警示
 
 ### Installation
 ```shell
@@ -29,19 +28,14 @@ $ python app.py
 [see web](https://)
 
 ### Reference
-1. MI2S Lab
-    - ASR
-    - TTS
+1. MI2S Lab ASR Technology
 2. Vue.js
 3. Flask
 4. SocketIO
 5. ChatGPT
 
 ### Future Work
-- [ ] Google 中文語者辨識
-
-### License
-[MIT](https://choosealicense.com/licenses/mit/)
+- [ ] Microsoft Azure Speech Synthesis
 
 ### Contact
 - [Paul Peng](mailto:kmes1234@gmail.com)

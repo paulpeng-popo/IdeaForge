@@ -35,7 +35,8 @@ createApp({
 
             // idle handler
             isIdle: false,
-            timer: null
+            timer: null,
+            idleThreshold: 20
         }
     },
     mounted() {
@@ -57,11 +58,8 @@ createApp({
             });
         }
 
-        // detect idle, press any key to reset timer
-        this.resetTimer(20);
-        document.addEventListener('keydown', () => {
-            this.resetTimer(20);
-        });
+        // detect idle
+        this.resetTimer();
     },
     methods: {
         initSocket() {
@@ -94,8 +92,14 @@ createApp({
                 message_format = {
                     "text": data.message,
                     "speaker": data.userName,
+                    "filename": data.filename,
                 }
                 this.chat_messages.push(message_format);
+                if (data.userName == "主持人") {
+                    this.say_sentence(data.filename, "/get_default");
+                } else {
+                    this.say_sentence(data.message, "/say");
+                }
             });
 
             // listen for user list update
@@ -168,14 +172,14 @@ createApp({
                 row = [];
             }
         },
-        resetTimer(threshold) {
+        resetTimer() {
             this.isIdle = false;
 
             clearTimeout(this.timer);
             this.timer = setTimeout(() => {
-                console.log('請積極參與討論');
                 this.isIdle = true;
-            }, threshold * 1000);
+                // alert('請積極參與討論');
+            }, this.idleThreshold * 1000);
         },
         // upload(blob) {
         //     var xhr = new XMLHttpRequest();
@@ -239,11 +243,18 @@ createApp({
             this.outer_text = "＠" + this.selectedQuestion
             this.showMenu = false;
         },
-        // repeat(event) {
-        //     event.preventDefault();
-        //     let audio_player = document.getElementById("audio");
-        //     audio_player.play();
-        // },
+        repeat(event, message_obj) {
+            event.preventDefault();
+            if ("filename" in message_obj && message_obj.filename != undefined) {
+                this.say_sentence(message_obj.filename, "/get_default");
+            } else {
+                let text = message_obj.text;
+                if (text.startsWith("＠") || text.startsWith("@")) {
+                    text = text.substring(1);
+                }
+                this.say_sentence(text, "/say");
+            }
+        },
         say_sentence(context, api_path) {
             $.ajax({
                 method: "POST",
@@ -279,12 +290,21 @@ createApp({
             event.preventDefault();
             this.inner_text = this.inner_text.trim();
             if (this.inner_text == "") return false;
+            if (this.inner_text[0] == "＠" || this.inner_text[0] == "@") {
+                this.inner_text = this.inner_text.substring(1);
+            }
             this.chat_messages.push({
                 "text": this.inner_text,
                 "speaker": "系統代言人"
             });
-            this.say_sentence(this.inner_text, "/say");
+            // this.say_sentence(this.inner_text, "/say");
+            this.socket.emit("message", {
+                "roomId": this.roomId,
+                "userName": "系統代言人",
+                "message": this.inner_text
+            });
             this.inner_text = "";
+            this.resetTimer();
         },
         send_outer(event) {
             event.preventDefault();
@@ -295,16 +315,28 @@ createApp({
                 "speaker": this.userName
             });
             if (this.outer_text[0] == "＠" || this.outer_text[0] == "@") {
+                this.socket.emit('message', {
+                    "roomId": this.roomId,
+                    "userName": this.userName,
+                    "message": this.outer_text
+                });
                 let answer = this.get_answer(this.outer_text.slice(1));
                 if (answer.text == "") {
-                    answer.text = "站不提供客製化提問，請選擇系統內建問題。"
+                    answer.text = "暫不提供客製化提問，請選擇系統內建問題。"
                     this.say_sentence(answer.text, "/say");
                 } else {
                     this.chat_messages.push({
                         "text": answer.text,
-                        "speaker": "主持人"
+                        "speaker": "主持人",
+                        "filename": answer.filename
                     });
                     this.say_sentence(answer.filename, "/get_default");
+                    this.socket.emit('message', {
+                        "roomId": this.roomId,
+                        "userName": "主持人",
+                        "message": answer.text,
+                        "filename": answer.filename
+                    });
                 }
             } else {
                 this.socket.emit('message', {
@@ -314,7 +346,7 @@ createApp({
                 });
             }
             this.outer_text = "";
-            console.log(this.chat_messages);
+            this.resetTimer();
         },
         member0() {
             let myModal = new bootstrap.Modal(document.getElementById('anonymous'), {
