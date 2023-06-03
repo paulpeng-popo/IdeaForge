@@ -36,7 +36,10 @@ createApp({
             // idle handler
             isIdle: false,
             timer: null,
-            idleThreshold: 20
+            idleThreshold: 20,
+
+            //offensive words
+            offensive: ["幹", "馬的", "他馬的", "他媽的", "媽的", "三小", "你媽死了", "王八蛋", "白痴", "笨蛋", "神經病", "智障", "吃屎"],
         }
     },
     mounted() {
@@ -303,6 +306,16 @@ createApp({
                 "userName": "系統代言人",
                 "message": this.inner_text
             });
+            for (i = 0; i < this.offensive.length; i++) {
+                if (this.inner_text.includes(this.offensive[i])) {
+                    this.chat_messages.pop()
+                    this.chat_messages.push({
+                        "text": "請勿輸入攻擊性詞彙",
+                        "speaker": "系統代言人"
+                    });
+                }
+                break;
+            }
             this.inner_text = "";
             this.resetTimer();
         },
@@ -344,6 +357,17 @@ createApp({
                     "userName": this.userName,
                     "message": this.outer_text
                 });
+            }
+
+            for (i = 0; i < this.offensive.length; i++) {
+                if (this.outer_text.includes(this.offensive[i])) {
+                    this.chat_messages.pop()
+                    this.chat_messages.push({
+                        "text": "請勿輸入攻擊性詞彙",
+                        "speaker": this.userName
+                    });
+                    break;
+                }
             }
             this.outer_text = "";
             this.resetTimer();
