@@ -191,6 +191,7 @@
                                 <i class="fa-solid fa-comment fa-2x"></i>
                             </button>
                             <div class="dropdown-menu" aria-labelledby="dropdown_button" :class="{show: showMenu}">
+                                <h6 class="dropdown-header">Chat GPT快捷問題</h6>
                                 <button class="dropdown-item" v-for="(question, index) in questions" :key="question.id"
                                     @click="selectQuestion($event, question.id)">
                                     [[ question.text ]]
