@@ -237,14 +237,20 @@ createApp({
         },
         selectQuestion(event, question_id) {
             event.preventDefault();
-            for (let i = 0; i < this.questions.length; i++) {
-                if (this.questions[i].id === question_id) {
-                    this.selectedQuestion = this.questions[i].text;
-                    break;
-                }
+            if (question_id === "0") {
+                this.outer_text = "＠"
+                this.showMenu = false;
             }
-            this.outer_text = "＠" + this.selectedQuestion
-            this.showMenu = false;
+            else {
+                for (let i = 0; i < this.questions.length; i++) {
+                    if (this.questions[i].id === question_id) {
+                        this.selectedQuestion = this.questions[i].text;
+                        break;
+                    }
+                }
+                this.outer_text = "＠" + this.selectedQuestion
+                this.showMenu = false;
+            }
         },
         repeat(event, message_obj) {
             event.preventDefault();
@@ -395,6 +401,11 @@ createApp({
         },
         load_qa() {
             this.full_qa_data = [
+                {
+                    "id": "0",
+                    "Question": "點選並輸入想詢問Chat GPT的問題",
+                    "Answer": ""
+                },
                 {
                     "id": "1",
                     "Question": "開會流程有什麼？",
