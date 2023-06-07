@@ -161,29 +161,6 @@
                         </button>
                     </div>
                     <div class="col-1">
-                        <button class="speak-button" v-on:click="microphone_toggle($event)">
-                            <i id="microphone_icon" class="fa fa-microphone-slash fa-2x"></i>
-                        </button>
-                    </div>
-                    <!-- <div class="col-1">
-                        <div class="switch-container">
-                            <input type="checkbox" id="slide_switch" v-on:click="switch_toggle()">
-                            <label for="slide_switch" class="switch"></label>
-                        </div>
-                    </div> -->
-                    <div class="col-6 input-container">
-                        <div class="input-wrapper">
-                            <input type="text" placeholder="＠ 想問 ChatGPT 的問題" v-model="outer_text"
-                                @keyup.enter.native="send_outer($event)">
-                            <button class="send-button" v-on:click="send_outer($event)" type="button">
-                                <i class="fa-solid fa-paper-plane fa-2x"></i>
-                            </button>
-                            <div class="hidden-section">
-                                <audio id="audio"></audio>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-1">
                         <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle common-button" type="button"
                                 id="dropdown_button" data-bs-toggle="dropdown" aria-haspopup="true"
@@ -199,10 +176,33 @@
                             </div>
                         </div>
                     </div>
+                    <!-- <div class="col-1">
+                        <div class="switch-container">
+                            <input type="checkbox" id="slide_switch" v-on:click="switch_toggle()">
+                            <label for="slide_switch" class="switch"></label>
+                        </div>
+                    </div> -->
+                    <div class="col-6 input-container">
+                        <div class="input-wrapper">
+                            <input type="text" placeholder="請輸入內容" v-model="outer_text"
+                                @keyup.enter.native="send_outer($event)">
+                            <button class="send-button" v-on:click="send_outer($event)" type="button">
+                                <i class="fa-solid fa-paper-plane fa-2x"></i>
+                            </button>
+                            <div class="hidden-section">
+                                <audio id="audio"></audio>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-1">
                         <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas"
                             data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">聊天室</button>
                     </div>
+                    <!-- <div class="col-1">
+                        <button class="speak-button" v-on:click="microphone_toggle($event)">
+                            <i id="microphone_icon" class="fa fa-microphone-slash fa-2x"></i>
+                        </button>
+                    </div> -->
                     <div class="col-1">
                         <div class="blank"></div>
                     </div>
