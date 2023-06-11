@@ -147,7 +147,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-5 input-container">
+                <div class="col-6 input-container">
                     <div class="input-wrapper">
                         <input type="text" placeholder="請輸入內容" v-model="outer_text"
                             @keyup.enter.native="send_outer($event)">
@@ -174,19 +174,6 @@
                     <template v-else>
                         <button class="icon-button" @click="microphone_toggle()">
                             <i class="fa-solid fa-microphone fa-2x"></i>
-                        </button>
-                    </template>
-                </div>
-                <div class="col-1">
-                    <!-- toggle volume -->
-                    <template v-if="!volume">
-                        <button class="icon-button" @click="volume_toggle()">
-                            <i class="fa-solid fa-volume-mute fa-2x"></i>
-                        </button>
-                    </template>
-                    <template v-else>
-                        <button class="icon-button" @click="volume_toggle()">
-                            <i class="fa-solid fa-volume-up fa-2x"></i>
                         </button>
                     </template>
                 </div>

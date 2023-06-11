@@ -4,7 +4,6 @@ createApp({
         return {
             // streaming
             microphone: false,
-            volume: true,
             localStream: null,
             pendingCandidates: {},
             peerConnections: {},
@@ -41,7 +40,7 @@ createApp({
             // idle handler
             isIdle: false,
             timer: null,
-            idleThreshold: 120,
+            idleThreshold: 300,
             grade_report: {},
 
             // preloaded data
@@ -71,7 +70,7 @@ createApp({
                 if (val.length > 0) {
                     let audio_player = new Audio();
                     audio_player.autoplay = true;
-                    audio_player.muted = !this.volume;
+                    audio_player.muted = false;
                     audio_player.src = "data:audio/wav;base64," + val[0];
                     audio_player.onplaying = () => {
                         this.speaking = true;
@@ -125,55 +124,40 @@ createApp({
 
             // listen for message from server
             this.socket.on('message', (data) => {
-                // convert object to JSON string
-                data = JSON.stringify(data);
-                // convert JSON string to JSON object
-                data = JSON.parse(data);
-                message_format = {
-                    "text": data.message,
-                    "speaker": data.userName,
+                const parsedData = JSON.parse(JSON.stringify(data));
+                const message_format = {
+                    "text": parsedData.message,
+                    "speaker": parsedData.userName,
                 }
                 this.chat_messages.push(message_format);
-                this.say_sentence(data.message);
+                this.say_sentence(parsedData.message);
             });
 
             // listen for user list update
             this.socket.on('userList', (data) => {
-                // convert object to JSON string
-                data = JSON.stringify(data);
-                // convert JSON string to JSON object
-                data = JSON.parse(data);
-                this.attendeeList = data.userList;
+                const parsedData = JSON.parse(JSON.stringify(data));
+                this.attendeeList = parsedData.userList;
                 this.update_attendee();
             });
 
             // listen for peer connection
             this.socket.on('peerConnection', (data) => {
-                // convert object to JSON string
-                data = JSON.stringify(data);
-                // convert JSON string to JSON object
-                data = JSON.parse(data);
-                this.createPeerConnection(data.socketId);
-                this.sendOffer(data.socketId);
-                this.addPendingCandidates(data.socketId);
+                const parsedData = JSON.parse(JSON.stringify(data));
+                this.createPeerConnection(parsedData.socketId);
+                this.sendOffer(parsedData.socketId);
+                this.addPendingCandidates(parsedData.socketId);
             });
 
             // listen for audio connection
             this.socket.on('audio_connection', (data) => {
-                // convert object to JSON string
-                data = JSON.stringify(data);
-                // convert JSON string to JSON object
-                data = JSON.parse(data);
-                this.handleSignalingData(data);
+                const parsedData = JSON.parse(JSON.stringify(data));
+                this.handleSignalingData(parsedData);
             });
 
             // listen for hangup
             this.socket.on('hangup', (data) => {
-                // convert object to JSON string
-                data = JSON.stringify(data);
-                // convert JSON string to JSON object
-                data = JSON.parse(data);
-                this.handleHangup(data.socketId);
+                const parsedData = JSON.parse(JSON.stringify(data));
+                this.handleHangup(parsedData.socketId);
             });
 
             // listen for socket disconnection
@@ -185,18 +169,19 @@ createApp({
                 window.location.href = '/';
             });
         },
-        sendData(data) {
+        sendAudioData(data) {
             this.socket.emit('audio_connection', data);
         },
         createPeerConnection(socketId) {
             try {
-                const peerConnection = new RTCPeerConnection(this.peerConnection_config);
+                const { peerConnection_config } = this;
+                const peerConnection = new RTCPeerConnection(peerConnection_config);
                 peerConnection.onicecandidate = this.onIceCandidate;
                 peerConnection.onaddstream = this.onAddStream;
-                peerConnection.addStream(this.localStream);
-                this.peerConnections[socketId] = {
-                    'peerConnection': peerConnection,
-                };
+                if (this.localStream) {
+                    this.localStream.getTracks().forEach(track => peerConnection.addTrack(track, this.localStream));
+                }
+                this.peerConnections[socketId] = { peerConnection };
             } catch (err) {
                 this.pop_up('建立連線失敗', 'error');
                 console.log(err);
@@ -223,106 +208,109 @@ createApp({
                 }
             );
         },
-        setAndSendLocalDescription(socketId, sessionDescription) {
-            this.peerConnections[socketId].peerConnection.setLocalDescription(sessionDescription);
-            this.sendData({
+        setAndSendLocalDescription(socketId, description) {
+            this.peerConnections[socketId].peerConnection.setLocalDescription(description);
+            this.sendAudioData({
                 'sid': socketId,
-                'type': sessionDescription.type,
-                'sdp': sessionDescription.sdp
+                'type': description.type,
+                'sdp': description.sdp
             });
         },
         onIceCandidate(event) {
-            if (event.candidate) {
-                this.sendData({
+            const { candidate } = event;
+            if (candidate) {
+                this.sendAudioData({
                     'type': 'candidate',
-                    'candidate': event.candidate,
+                    'candidate': candidate,
                 });
             }
         },
         onAddStream(event) {
             let audio_player = new Audio();
             audio_player.autoplay = true;
+            audio_player.controls = true;
             audio_player.srcObject = event.stream;
             audio_player.play();
         },
         addPendingCandidates(socketId) {
             if (socketId in this.pendingCandidates) {
-                // this function is used to add pending candidates to peer connection
-                this.pendingCandidates[socketId].forEach(candidate => {
-                    this.peerConnections[socketId].peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                });
+                const pendingCandidates = this.pendingCandidates[socketId];
+                for (const candidate of pendingCandidates) {
+                    try {
+                        this.peerConnections[socketId].peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    } catch (err) {
+                        // do nothing
+                    }
+                }
             }
         },
         handleSignalingData(data) {
-            const sid = data.sid;
-            delete data.sid;
-            switch (data.type) {
+            const { sid, ...rest } = data;
+            switch (rest.type) {
                 case 'offer':
-                    // create peer connection only when offer is received and microphone is on
                     if (this.microphone) {
                         this.createPeerConnection(sid);
-                        this.peerConnections[sid].peerConnection.setRemoteDescription(new RTCSessionDescription(data));
+                        this.peerConnections[sid].peerConnection.setRemoteDescription(new RTCSessionDescription(rest));
                         this.sendAnswer(sid);
                         this.addPendingCandidates(sid);
                     }
                     break;
                 case 'answer':
-                    this.peerConnections[sid].peerConnection.setRemoteDescription(new RTCSessionDescription(data));
+                    this.peerConnections[sid].peerConnection.setRemoteDescription(new RTCSessionDescription(rest));
                     break;
                 case 'candidate':
                     if (sid in this.peerConnections) {
-                        this.peerConnections[sid].peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-                    } else {
-                        if (!(sid in this.pendingCandidates)) {
-                            this.pendingCandidates[sid] = [];
+                        try {
+                            this.peerConnections[sid].peerConnection.addIceCandidate(new RTCIceCandidate(rest.candidate));
+                        } catch (err) {
+                            // do nothing
                         }
-                        this.pendingCandidates[sid].push(data.candidate);
+                    } else {
+                        this.pendingCandidates[sid] = this.pendingCandidates[sid] || [];
+                        this.pendingCandidates[sid].push(signalingData.candidate);
                     }
                     break;
             }
         },
         handleHangup(socketId) {
-            this.peerConnections[socketId].peerConnection.close();
-            delete this.peerConnections[socketId];
+            try {
+                this.peerConnections[socketId].peerConnection.close();
+                delete this.peerConnections[socketId];
+            } catch (err) {
+                // do nothing
+            }
         },
-        microphone_toggle() {
+        async microphone_toggle() {
             this.microphone = !this.microphone;
             if (this.microphone) {
-                navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: false
-                }).then((stream) => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                        video: false
+                    });
                     this.localStream = stream;
                     this.socket.emit('audio', {
                         socketId: this.socketId
                     });
-                }).catch((error) => {
-                    this.pop_up('無法取得麥克風權限', 'error');
-                    console.log(error);
-                });
-            } else {
-                this.localStream.getTracks().forEach(track => track.stop());
-                this.socket.emit('audio_stop', {
-                    socketId: this.socketId
-                });
-
-                // clear all peer connections
-                for (let socketId in this.peerConnections) {
-                    this.peerConnections[socketId].peerConnection.close();
-                    delete this.peerConnections[socketId];
+                } catch (error) {
+                    this.handleMicrophoneError(error);
                 }
-
-                // clear all pending candidates
-                this.pendingCandidates = {};
+            } else {
+                this.stopMicrophone();
             }
         },
-        volume_toggle() {
-            this.volume = !this.volume;
-            if (this.volume) {
-                this.localStream.getAudioTracks()[0].enabled = true;
-            } else {
-                this.localStream.getAudioTracks()[0].enabled = false;
-            }
+        handleMicrophoneError(error) {
+            this.pop_up('無法取得麥克風權限', 'error');
+            console.log(error);
+        },
+        stopMicrophone() {
+            // stop send local audio stream to peer
+            // but still receive remote audio stream from peer
+            this.localStream.getTracks().forEach(track => track.stop());
+            this.localStream = null;
+            this.socket.emit('audio', {
+                socketId: this.socketId
+            });
         },
         update_attendee() {
             this.attendee = this.attendeeList.length;
@@ -466,6 +454,8 @@ createApp({
                 "speaker": "系統代言人"
             });
 
+            this.say_sentence(this.inner_text);
+
             // 將訊息傳送給其他人
             this.socket.emit("message", {
                 "roomId": this.roomId,
@@ -493,6 +483,8 @@ createApp({
                 "text": this.outer_text,
                 "speaker": this.userName
             });
+
+            this.say_sentence(this.outer_text);
 
             // socket emit to other users
             this.socket.emit('message', {

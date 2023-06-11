@@ -227,6 +227,6 @@ def audio_stop(data):
 
 
 if __name__ == "__main__":
-    HOST = "127.0.0.1"
+    HOST = "0.0.0.0"
     PORT = 6093
     socketio.run(app, host=HOST, port=PORT, debug=True)
