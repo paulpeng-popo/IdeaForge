@@ -4,6 +4,15 @@ createApp({
         return {
             // streaming
             microphone: false,
+            volume: true,
+            localStream: null,
+            pendingCandidates: {},
+            peerConnections: {},
+            peerConnection_config: {
+                'iceServers': [{
+                    'urls': 'stun:stun.l.google.com:19302'
+                }]
+            },
 
             // chat variables
             inner_text: "",
@@ -12,15 +21,11 @@ createApp({
             showMenu: false,
 
             // chatGPT
-            full_qa_data: [],
             questions: [],
-            selectedQuestion: "",
             speaking: false,
-
-            // record voice
-            // mediaRecorder: null,
-            // isRecording: false,
-            // chunks: [],
+            waiting_buffer: [],
+            audio_buffer: [],
+            tts_processing: false,
 
             // socket.io
             socket: null,
@@ -36,11 +41,51 @@ createApp({
             // idle handler
             isIdle: false,
             timer: null,
-            idleThreshold: 20,
+            idleThreshold: 120,
+            grade_report: {},
 
-            //offensive words
-            offensive: ["馬的", "他馬的", "他媽的", "媽的", "三小", "你媽死了", "王八蛋", "白痴", "白ㄔ", "白癡", "白吃", "笨蛋", "神經病", "智障", "吃屎"],
+            // preloaded data
+            qa_data: [],
+            offensiveWords: [],
         }
+    },
+    watch: {
+        waiting_buffer: {
+            handler: function (val, oldVal) {
+                while (this.tts_processing) {
+                    // wait for tts to finish
+                }
+                if (val.length > 0) {
+                    // console.log("tts_say: " + val[0]);
+                    this.tts_processing = true;
+                    this.tts_say(val[0]);
+                    this.waiting_buffer.shift();
+                    this.tts_processing = false;
+                }
+            },
+            deep: true,
+            immediate: true
+        },
+        audio_buffer: {
+            handler: function (val, oldVal) {
+                if (val.length > 0) {
+                    let audio_player = new Audio();
+                    audio_player.autoplay = true;
+                    audio_player.muted = !this.volume;
+                    audio_player.src = "data:audio/wav;base64," + val[0];
+                    audio_player.onplaying = () => {
+                        this.speaking = true;
+                    };
+                    audio_player.onended = () => {
+                        this.speaking = false;
+                        this.audio_buffer.shift();
+                    };
+                    audio_player.play();
+                }
+            },
+            deep: true,
+            immediate: true
+        },
     },
     mounted() {
         // get user name and room id from session storage
@@ -53,15 +98,7 @@ createApp({
         }
 
         this.initSocket();
-        this.load_qa();
-        for (let i = 0; i < this.full_qa_data.length; i++) {
-            this.questions.push({
-                id: this.full_qa_data[i].id,
-                text: this.full_qa_data[i].Question
-            });
-        }
-
-        // detect idle
+        this.load_data();
         this.resetTimer();
     },
     methods: {
@@ -95,14 +132,9 @@ createApp({
                 message_format = {
                     "text": data.message,
                     "speaker": data.userName,
-                    "filename": data.filename,
                 }
                 this.chat_messages.push(message_format);
-                if (data.userName == "主持人") {
-                    this.say_sentence(data.filename, "/get_default");
-                } else {
-                    this.say_sentence(data.message, "/say");
-                }
+                this.say_sentence(data.message);
             });
 
             // listen for user list update
@@ -115,14 +147,182 @@ createApp({
                 this.update_attendee();
             });
 
+            // listen for peer connection
+            this.socket.on('peerConnection', (data) => {
+                // convert object to JSON string
+                data = JSON.stringify(data);
+                // convert JSON string to JSON object
+                data = JSON.parse(data);
+                this.createPeerConnection(data.socketId);
+                this.sendOffer(data.socketId);
+                this.addPendingCandidates(data.socketId);
+            });
+
+            // listen for audio connection
+            this.socket.on('audio_connection', (data) => {
+                // convert object to JSON string
+                data = JSON.stringify(data);
+                // convert JSON string to JSON object
+                data = JSON.parse(data);
+                this.handleSignalingData(data);
+            });
+
+            // listen for hangup
+            this.socket.on('hangup', (data) => {
+                // convert object to JSON string
+                data = JSON.stringify(data);
+                // convert JSON string to JSON object
+                data = JSON.parse(data);
+                this.handleHangup(data.socketId);
+            });
+
             // listen for socket disconnection
             this.socket.on('disconnect', () => {
-                alert('連線已中斷，請重新登入');
+                this.pop_up('伺服器連線中斷，請重新登入', 'info');
                 // clear session storage
                 sessionStorage.clear();
                 // redirect to index page
                 window.location.href = '/';
             });
+        },
+        sendData(data) {
+            this.socket.emit('audio_connection', data);
+        },
+        createPeerConnection(socketId) {
+            try {
+                const peerConnection = new RTCPeerConnection(this.peerConnection_config);
+                peerConnection.onicecandidate = this.onIceCandidate;
+                peerConnection.onaddstream = this.onAddStream;
+                peerConnection.addStream(this.localStream);
+                this.peerConnections[socketId] = {
+                    'peerConnection': peerConnection,
+                };
+            } catch (err) {
+                this.pop_up('建立連線失敗', 'error');
+                console.log(err);
+            }
+        },
+        sendOffer(socketId) {
+            this.peerConnections[socketId].peerConnection.createOffer({
+                offerToReceiveAudio: 1,
+                offerToReceiveVideo: 0
+            }).then(
+                (sdp) => this.setAndSendLocalDescription(socketId, sdp),
+                (err) => {
+                    this.pop_up('offer 建立失敗', 'error');
+                    console.log(err);
+                }
+            );
+        },
+        sendAnswer(socketId) {
+            this.peerConnections[socketId].peerConnection.createAnswer().then(
+                (sdp) => this.setAndSendLocalDescription(socketId, sdp),
+                (err) => {
+                    this.pop_up('answer 建立失敗', 'error');
+                    console.log(err);
+                }
+            );
+        },
+        setAndSendLocalDescription(socketId, sessionDescription) {
+            this.peerConnections[socketId].peerConnection.setLocalDescription(sessionDescription);
+            this.sendData({
+                'sid': socketId,
+                'type': sessionDescription.type,
+                'sdp': sessionDescription.sdp
+            });
+        },
+        onIceCandidate(event) {
+            if (event.candidate) {
+                this.sendData({
+                    'type': 'candidate',
+                    'candidate': event.candidate,
+                });
+            }
+        },
+        onAddStream(event) {
+            let audio_player = new Audio();
+            audio_player.autoplay = true;
+            audio_player.srcObject = event.stream;
+            audio_player.play();
+        },
+        addPendingCandidates(socketId) {
+            if (socketId in this.pendingCandidates) {
+                // this function is used to add pending candidates to peer connection
+                this.pendingCandidates[socketId].forEach(candidate => {
+                    this.peerConnections[socketId].peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                });
+            }
+        },
+        handleSignalingData(data) {
+            const sid = data.sid;
+            delete data.sid;
+            switch (data.type) {
+                case 'offer':
+                    // create peer connection only when offer is received and microphone is on
+                    if (this.microphone) {
+                        this.createPeerConnection(sid);
+                        this.peerConnections[sid].peerConnection.setRemoteDescription(new RTCSessionDescription(data));
+                        this.sendAnswer(sid);
+                        this.addPendingCandidates(sid);
+                    }
+                    break;
+                case 'answer':
+                    this.peerConnections[sid].peerConnection.setRemoteDescription(new RTCSessionDescription(data));
+                    break;
+                case 'candidate':
+                    if (sid in this.peerConnections) {
+                        this.peerConnections[sid].peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    } else {
+                        if (!(sid in this.pendingCandidates)) {
+                            this.pendingCandidates[sid] = [];
+                        }
+                        this.pendingCandidates[sid].push(data.candidate);
+                    }
+                    break;
+            }
+        },
+        handleHangup(socketId) {
+            this.peerConnections[socketId].peerConnection.close();
+            delete this.peerConnections[socketId];
+        },
+        microphone_toggle() {
+            this.microphone = !this.microphone;
+            if (this.microphone) {
+                navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                }).then((stream) => {
+                    this.localStream = stream;
+                    this.socket.emit('audio', {
+                        socketId: this.socketId
+                    });
+                }).catch((error) => {
+                    this.pop_up('無法取得麥克風權限', 'error');
+                    console.log(error);
+                });
+            } else {
+                this.localStream.getTracks().forEach(track => track.stop());
+                this.socket.emit('audio_stop', {
+                    socketId: this.socketId
+                });
+
+                // clear all peer connections
+                for (let socketId in this.peerConnections) {
+                    this.peerConnections[socketId].peerConnection.close();
+                    delete this.peerConnections[socketId];
+                }
+
+                // clear all pending candidates
+                this.pendingCandidates = {};
+            }
+        },
+        volume_toggle() {
+            this.volume = !this.volume;
+            if (this.volume) {
+                this.localStream.getAudioTracks()[0].enabled = true;
+            } else {
+                this.localStream.getAudioTracks()[0].enabled = false;
+            }
         },
         update_attendee() {
             this.attendee = this.attendeeList.length;
@@ -150,7 +350,7 @@ createApp({
                     avatar = "../static/images/robot_nobg.png";
                 } else {
                     let random_index = Math.floor(Math.random() * 6);
-                    name = this.attendeeList[i - 1];
+                    name = this.attendeeList[i - 1].userName;
                     avatar = "../static/images/" + pic_names[random_index];
                 }
 
@@ -181,192 +381,144 @@ createApp({
             clearTimeout(this.timer);
             this.timer = setTimeout(() => {
                 this.isIdle = true;
-                // alert('請積極參與討論');
+                // 紀錄使用者被系統判定為消極的時間及次數
+                let user_name = this.userName;
+                let time_stamp = new Date().toLocaleString();
+                if (!(user_name in this.grade_report)) {
+                    this.grade_report[user_name] = {
+                        "frequency": 0,
+                        "time_stamp": []
+                    };
+                }
+                this.grade_report[user_name].frequency += 1;
+                this.grade_report[user_name].time_stamp.push(time_stamp);
+                text = "您已經" + this.grade_report[user_name].frequency + "次被系統判定為消極，請積極參與討論";
+                this.pop_up(text, "warning");
+                // console.log(this.grade_report);
+                // TODO: send this grade report to server
             }, this.idleThreshold * 1000);
         },
-        // upload(blob) {
-        //     var xhr = new XMLHttpRequest();
-        //     xhr.open('POST', '/recog');
-        //     xhr.onload = function () {
-        //         if (xhr.status === 200) {
-        //             // parse JSON response
-        //             var response = JSON.parse(xhr.responseText);
-        //             console.log(response);
-        //             outer_text = response.text;
-        //         } else {
-        //             alert('錯誤！請重新錄音');
-        //         }
-        //     };
-        //     xhr.send(blob);
-        // },
-        // record_voice() {
-        //     if (this.isRecording) {
-        //         this.mediaRecorder.stop();
-        //         this.isRecording = false;
-        //     } else {
-        //         navigator.mediaDevices.getUserMedia({
-        //             audio: true, video: false
-        //         }).then(stream => {
-        //             this.mediaRecorder = new MediaRecorder(stream);
-        //             this.mediaRecorder.ondataavailable = e => this.chunks.push(e.data);
-        //             this.mediaRecorder.onstop = e => {
-        //                 let blob = new Blob(this.chunks, {
-        //                     type: 'audio/wav; codecs=MS_PCM'
-        //                 });
-        //                 this.chunks = [];
-        //                 this.upload(blob);
-        //             };
-        //             this.mediaRecorder.start();
-        //             this.isRecording = true;
-        //         }).catch(console.error);
-        //     }
-        // },
-        microphone_toggle(event) {
+        selectQuestion(event, q_id, question) {
             event.preventDefault();
-            this.microphone = !this.microphone;
-            console.log("麥克風狀態: " + this.microphone);
-            let icon = document.getElementById("microphone_icon");
-            if (this.microphone) {
-                icon.classList.remove("fa-microphone-slash");
-                icon.classList.add("fa-microphone");
+
+            // command mode
+            if (q_id === "0") {
+                this.outer_text = "＠";
             } else {
-                icon.classList.remove("fa-microphone");
-                icon.classList.add("fa-microphone-slash");
+                // default questions
+                this.outer_text = "＠" + question;
             }
-            // this.record_voice();
-        },
-        selectQuestion(event, question_id) {
-            event.preventDefault();
-            if (question_id === "0") {
-                this.outer_text = "＠"
-                this.showMenu = false;
-            }
-            else {
-                for (let i = 0; i < this.questions.length; i++) {
-                    if (this.questions[i].id === question_id) {
-                        this.selectedQuestion = this.questions[i].text;
-                        break;
-                    }
-                }
-                this.outer_text = "＠" + this.selectedQuestion
-                this.showMenu = false;
-            }
+            this.showMenu = false;
         },
         repeat(event, message_obj) {
             event.preventDefault();
-            if ("filename" in message_obj && message_obj.filename != undefined) {
-                this.say_sentence(message_obj.filename, "/get_default");
-            } else {
-                let text = message_obj.text;
-                if (text.startsWith("＠") || text.startsWith("@")) {
-                    text = text.substring(1);
-                }
-                this.say_sentence(text, "/say");
-            }
+
+            let text = message_obj.text;
+            text = text.replace(/^＠|^@/, "");
+            this.say_sentence(text);
         },
-        say_sentence(context, api_path) {
+        say_sentence(context) {
+            this.waiting_buffer.push(context);
+        },
+        tts_say(context) {
             $.ajax({
                 method: "POST",
-                url: api_path,
+                url: "/say",
                 data: {
                     "text": context,
-                    "filename": context
                 },
                 dataType: "json",
             })
                 .done(result => {
                     if (result["status"] == "true") {
-                        let audio_player = document.getElementById("audio");
-                        audio_player.src = "data:audio/wav;base64," + result["data"];
-                        audio_player.onplaying = () => {
-                            this.speaking = true;
-                        };
-                        audio_player.onended = () => {
-                            this.speaking = false;
-                        };
-                        audio_player.play();
+                        this.audio_buffer.push(result["data"]);
                     } else {
-                        console.log("FAILED: " + result);
+                        this.pop_up(result["data"], "warning");
                         return false;
                     }
                 })
-                .fail(function (result) {
+                .fail(result => {
+                    this.pop_up("合成伺服器錯誤，請稍後再試", "error");
                     console.log("FAILED: " + result);
                     return false;
                 });
+
+            return true;
         },
         send_inner(event) {
             event.preventDefault();
+
+            // 取得輸入框內容
             this.inner_text = this.inner_text.trim();
             if (this.inner_text == "") return false;
-            if (this.inner_text[0] == "＠" || this.inner_text[0] == "@") {
-                this.inner_text = this.inner_text.substring(1);
+
+            // 檢查是否有攻擊性詞彙
+            if (this.check_offensive(this.outer_text)) {
+                return false;
             }
+
+            // 去除字串裡的 ＠ 或 @
+            this.inner_text = this.inner_text.replace(/^＠|^@/, "");
+
+            // 將訊息加入聊天室
             this.chat_messages.push({
                 "text": this.inner_text,
                 "speaker": "系統代言人"
             });
-            // this.say_sentence(this.inner_text, "/say");
+
+            // 將訊息傳送給其他人
             this.socket.emit("message", {
                 "roomId": this.roomId,
                 "userName": "系統代言人",
                 "message": this.inner_text
             });
-            for (i = 0; i < this.offensive.length; i++) {
-                if (this.inner_text.includes(this.offensive[i])) {
-                    this.chat_messages.pop()
-                    alert("請勿輸入攻擊性詞彙")
-                    break;
-                }
-            }
+
             this.inner_text = "";
             this.resetTimer();
         },
         send_outer(event) {
             event.preventDefault();
+
+            // 取得輸入的文字
             this.outer_text = this.outer_text.trim();
             if (this.outer_text == "") return false;
+
+            // 檢查是否有攻擊性詞彙
+            if (this.check_offensive(this.outer_text)) {
+                return false;
+            }
+
+            // 將文字加入聊天室
             this.chat_messages.push({
                 "text": this.outer_text,
                 "speaker": this.userName
             });
+
+            // socket emit to other users
+            this.socket.emit('message', {
+                "roomId": this.roomId,
+                "userName": this.userName,
+                "message": this.outer_text
+            });
+
+            // 將文字傳送給後端
             if (this.outer_text[0] == "＠" || this.outer_text[0] == "@") {
-                this.socket.emit('message', {
-                    "roomId": this.roomId,
-                    "userName": this.userName,
-                    "message": this.outer_text
-                });
                 let answer = this.get_answer(this.outer_text.slice(1));
-                if (answer.text == "") {
-                    answer.text = "暫不提供客製化提問，請選擇系統內建問題。"
-                    this.say_sentence(answer.text, "/say");
+                if (answer == "") {
+                    answer = "暫不提供客製化提問，請選擇系統內建問題。"
+                    this.say_sentence(answer);
                 } else {
+                    // 將回答加入聊天室
                     this.chat_messages.push({
-                        "text": answer.text,
+                        "text": answer,
                         "speaker": "主持人",
-                        "filename": answer.filename
                     });
-                    this.say_sentence(answer.filename, "/get_default");
                     this.socket.emit('message', {
                         "roomId": this.roomId,
                         "userName": "主持人",
-                        "message": answer.text,
-                        "filename": answer.filename
+                        "message": answer,
                     });
-                }
-            } else {
-                this.socket.emit('message', {
-                    "roomId": this.roomId,
-                    "userName": this.userName,
-                    "message": this.outer_text
-                });
-            }
-
-            for (i = 0; i < this.offensive.length; i++) {
-                if (this.outer_text.includes(this.offensive[i])) {
-                    this.chat_messages.pop()
-                    alert("請勿輸入攻擊性詞彙")
-                    break;
+                    this.say_sentence(answer);
                 }
             }
             this.outer_text = "";
@@ -379,25 +531,48 @@ createApp({
             });
             myModal.show()
         },
+        pop_up(message, icon) {
+            Swal.fire({
+                width: 600,
+                padding: '2em',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                title: message,
+                confirmButtonText: '知道了',
+                confirmButtonColor: '#3085d6',
+                icon: icon,
+            });
+        },
+        check_offensive(input_text) {
+            for (i = 0; i < this.offensiveWords.length; i++) {
+                if (input_text.includes(this.offensiveWords[i])) {
+                    this.pop_up("請勿輸入攻擊性詞彙", "warning");
+                    return true;
+                }
+            }
+            return false;
+        },
         get_answer(user_q) {
-            let answer = {
-                "filename": "",
-                "text": ""
-            };
-            for (let i = 0; i < this.full_qa_data.length; i++) {
-                if (this.full_qa_data[i].Question == user_q) {
-                    answer.filename = "answer" + this.full_qa_data[i].id + ".mp3";
-                    answer.text = this.full_qa_data[i].Answer;
+            let answer = "";
+            for (let i = 0; i < this.qa_data.length; i++) {
+                if (this.qa_data[i].Question == user_q) {
+                    answer = this.qa_data[i].Answer;
                     break;
                 }
             }
             return answer
         },
-        load_qa() {
-            this.full_qa_data = [
+        load_data() {
+            this.offensiveWords = [
+                "馬的", "他馬的", "他媽的", "媽的", "三小",
+                "你媽死了", "王八蛋", "白痴", "白ㄔ", "白癡",
+                "白吃", "笨蛋", "神經病", "智障", "吃屎"
+            ];
+            this.qa_data = [
                 {
                     "id": "0",
-                    "Question": "點選並輸入想詢問Chat GPT的問題",
+                    "Question": "點選並輸入想詢問 ChatGPT 的問題",
                     "Answer": ""
                 },
                 {
@@ -407,50 +582,56 @@ createApp({
                 },
                 {
                     "id": "2",
-                    "Question": "如何規劃專案執行的進度",
+                    "Question": "如何規劃專案執行的進度？",
                     "Answer": "目標設定、任務分配、時間估計、排程安排、監控進度。"
                 },
                 {
                     "id": "3",
-                    "Question": "如何避免分工不均",
+                    "Question": "如何避免分工不均？",
                     "Answer": "明確職責、溝通協調、平衡工作量、確保資源、持續評估。"
                 },
                 {
                     "id": "4",
-                    "Question": "如何破冰",
+                    "Question": "如何破冰？",
                     "Answer": "互相介紹、小遊戲、共享興趣、開放式問題、輕鬆交流。"
                 },
                 {
                     "id": "5",
-                    "Question": "有哪些適合小組共同編輯筆記的軟體",
+                    "Question": "有哪些適合小組共同編輯筆記的軟體？",
                     "Answer": "Google Docs、Microsoft Teams、Notion、Slack、Trello。"
                 },
                 {
                     "id": "6",
-                    "Question": "有哪些適合作為小組專案管理的軟體",
+                    "Question": "有哪些適合作為小組專案管理的軟體？",
                     "Answer": "Asana、Trello、Jira、Basecamp、Microsoft Planner。"
                 },
                 {
                     "id": "7",
-                    "Question": "該怎麼避免會議離題",
+                    "Question": "該怎麼避免會議離題？",
                     "Answer": "明確議程，控制討論時間，引導回正題，鼓勵具體討論，總結行動項目。"
                 },
                 {
                     "id": "8",
-                    "Question": "如何分工",
+                    "Question": "工作如何分配？",
                     "Answer": "了解能力，設定職責，溝通清晰，協作機會均等，彈性調整。"
                 },
                 {
                     "id": "9",
-                    "Question": "今天會議需要討論的題目有: 1.期末專題主題 2. 分工 3. 時程規劃，請幫我安排會議大綱和時長",
-                    "Answer": "期末專題主題討論（10分鐘），分工安排與職責討論（15分鐘），時程規劃和里程碑設定（10分鐘），總結和下一步行動確認（5分鐘）"
+                    "Question": "今天會議需要討論的題目有: 1.期末專題主題 2.分工 3.時程規劃，幫我安排會議大綱和時長？",
+                    "Answer": "期末專題主題討論（10分鐘），分工安排與職責討論（15分鐘），時程規劃和里程碑設定（10分鐘），總結和下一步行動確認（5分鐘）。"
                 },
                 {
                     "id": "10",
-                    "Question": "我們小組內部吵架了，作為主持人請幫忙打圓場",
+                    "Question": "我們小組內部吵架了，請問該怎麼辦？",
                     "Answer": "冷靜下來，彼此尊重，共同關注目標，找出共識點，以建設性方式解決分歧，繼續合作。"
                 }
             ];
+            for (let i = 0; i < this.qa_data.length; i++) {
+                this.questions.push({
+                    id: this.qa_data[i].id,
+                    text: this.qa_data[i].Question
+                });
+            }
         }
     },
     delimiters: ['[[', ']]']

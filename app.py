@@ -6,7 +6,6 @@ import base64
 from flask_cors import CORS
 from toolspack.color_speaker import *
 from toolspack.crossAPI import TTSCrossLanguage
-# from toolspack.recogAPI import ASRChineseAPI
 from flask import Flask, session, request, url_for, redirect
 from flask import jsonify, render_template
 from flask_session import Session
@@ -32,13 +31,11 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 session = {
     "rooms": {},
     "users": {},
-    "messages": {},
 }
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 AudioPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
 
-# mkdir audio
 if not os.path.exists(AudioPath):
     os.mkdir(AudioPath)
 
@@ -61,27 +58,27 @@ def check():
 
         response = {
             "status": "true",
-            "message": "檢查通過",
+            "data": "檢查通過",
         }
 
         name_list = list(session["users"].values())
         if userName in name_list:
             response["status"] = "false"
-            response["message"] = "此名稱已被使用"
+            response["data"] = "此名稱已被使用"
         
         if post_type == "join":
             if roomId not in session["rooms"]:
                 response["status"] = "false"
-                response["message"] = "房間不存在"
+                response["data"] = "房間不存在"
             return jsonify(response)
         elif post_type == "create":
             if roomId in session["rooms"]:
                 response["status"] = "false"
-                response["message"] = "房間已存在，刷新頁面以取得新的房間代號"
+                response["data"] = "房間已存在，刷新頁面以取得新的房間代號"
             return jsonify(response)
         else:
             response["status"] = "false"
-            response["message"] = "未知的請求"
+            response["data"] = "未知的請求"
             return jsonify(response)
 
     else:
@@ -93,16 +90,35 @@ def room(roomId):
     return render_template("room.html", roomId=roomId)
 
 
+def handle_text(text):
+    # replace \n with space
+    text = text.replace("\n", " ")
+    # remove leading and trailing spaces
+    text = text.strip()
+    # remove non-printable characters
+    text = "".join([c for c in text if c.isprintable()])
+    # remove multiple spaces
+    text = " ".join(text.split())
+    return text
+
+
 @app.route("/say", methods=["POST"])
 def api():
     text = request.form.get("text")
-    # replace \n with space
-    text = text.replace("\n", " ")
-    
-    if len(text) > 40:
+    if text is None:
         result = {
             "status": "false",
-            "data": "text too long",
+            "data": "請求無效",
+        }
+        return jsonify(result)
+    
+    text = handle_text(text)
+    
+    # check text length
+    if len(text) > 50:
+        result = {
+            "status": "false",
+            "data": "字數超過上限",
         }
         return jsonify(result)
 
@@ -117,6 +133,9 @@ def api():
     with open(filename, "rb") as audio:
         audio_b64 = base64.b64encode(audio.read())
 
+    # remove audio file
+    os.remove(filename)
+
     result = {
         "status": "true",
         "data": audio_b64.decode("utf-8"),
@@ -125,33 +144,7 @@ def api():
     return jsonify(result)
 
 
-@app.route("/get_default", methods=["POST"])
-def get_default():
-    filename = request.form.get("filename")
-    try:
-        with open(os.path.join(AudioPath, "default", filename), "rb") as audio:
-            audio_b64 = base64.b64encode(audio.read())
-    except:
-        result = {
-            "status": "false",
-            "data": "file not found",
-        }
-        return jsonify(result)
-    result = {
-        "status": "true",
-        "data": audio_b64.decode("utf-8"),
-    }
-    return jsonify(result)
-
-
-# @app.route("/recog", methods=["POST"])
-# def recog():
-#     audio_blob = request.data
-#     recog_client = ASRChineseAPI(audio_blob, AudioPath)
-#     recog_client.recognize()
-#     text = recog_client.get_text()
-#     return jsonify(text=text)
-
+### SocketIO ###
 
 @socketio.on("connect")
 def connect():
@@ -165,19 +158,13 @@ def disconnect():
         if request.sid in session["rooms"][roomId]:
             session["rooms"][roomId].remove(request.sid)
             session["users"].pop(request.sid, None)
-            emit("leave", {"userName": "系統", "roomId": roomId}, broadcast=True)
-
-            # send user list to all users in the room
+            emit("leave", {"userName": "<系統自動動作>", "roomId": roomId}, broadcast=True)
             userList({"roomId": roomId})
 
 
 @socketio.on("message")
 def message(data):
-    roomId = data["roomId"]
     say(data["userName"] + ": " + data["message"])
-    if roomId not in session["messages"]:
-        session["messages"][roomId] = { "text": [] }
-    session["messages"][roomId]["text"].append(data)
     emit("message", data, broadcast=True, include_self=False)
 
 
@@ -190,8 +177,6 @@ def join(data):
     else:
         session["rooms"][data["roomId"]].append(request.sid)
     emit("join", data, broadcast=True)
-    
-    # send user list to all users in the room
     userList(data)
 
 
@@ -200,7 +185,11 @@ def userList(data):
     roomId = data["roomId"]
     userList = []
     for sid in session["rooms"][roomId]:
-        userList.append(session["users"][sid])
+        user_item = {
+            "socketId": sid,
+            "userName": session["users"][sid],
+        }
+        userList.append(user_item)
     emit("userList", {"userList": userList}, broadcast=True)
 
 
@@ -210,12 +199,34 @@ def leave(data):
     session["rooms"][data["roomId"]].remove(request.sid)
     session["users"].pop(request.sid, None)
     emit("leave", data, broadcast=True)
-
-    # send user list to all users in the room
     userList(data)
 
 
+@socketio.on("audio")
+def audio(data):
+    emit("peerConnection", data, broadcast=True, include_self=False)
+
+
+@socketio.on("audio_connection")
+def audio_connection(data):
+    peerToSend = None
+    if 'sid' in data:
+        peerToSend = data['sid']
+    data['sid'] = request.sid
+    if peerToSend is None:
+        emit("audio_connection", data, broadcast=True, include_self=False)
+    else:
+        emit("audio_connection", data, room=peerToSend)
+
+
+@socketio.on("audio_stop")
+def audio_stop(data):
+    emit("hangup", data, broadcast=True, include_self=False)
+
+### End SocketIO ###
+
+
 if __name__ == "__main__":
-    HOST = "0.0.0.0"
+    HOST = "127.0.0.1"
     PORT = 6093
     socketio.run(app, host=HOST, port=PORT, debug=True)

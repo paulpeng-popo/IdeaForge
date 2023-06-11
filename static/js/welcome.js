@@ -41,7 +41,7 @@ createApp({
         joinRoom(event) {
             event.preventDefault();
 
-            if (!this.checkRoomId()) {
+            if (!this.localcheck()) {
                 return;
             }
 
@@ -52,33 +52,7 @@ createApp({
 
             this.infoCheck(formData);
         },
-        infoCheck(data) {
-            axios.post('/check', data)
-                .then(res => {
-                    if (res.data.status == 'false') {
-                        alert(res.data.message);
-                    } else {
-                        // save user name and room id to session storage
-                        // and set session storage to expire after 1 hour
-                        sessionStorage.setItem('userName', this.userName);
-                        sessionStorage.setItem('roomId', this.roomId);
-                        sessionStorage.setItem('expire', Date.now() + 3600000);
-
-                        // redirect to room page
-                        this.redirectToRoom();
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        },
-        redirectToRoom() {
-            setTimeout(() => {
-                // redirect to room page
-                window.location.href = `/room/${this.roomId}`;
-            }, 500);
-        },
-        checkRoomId() {
+        localcheck() {
             // convert roomId to string
             this.roomId = this.roomId.toString();
             // ensure room id is 6 digits
@@ -93,6 +67,8 @@ createApp({
 
             // convert userName to string
             this.userName = this.userName.toString();
+            // strip leading and trailing spaces
+            this.userName = this.userName.trim();
             // ensure user name is not empty
             if (this.userName == '') {
                 // set custom validation message
@@ -104,7 +80,47 @@ createApp({
             }
 
             return true;
-        }
+        },
+        infoCheck(data) {
+            axios.post('/check', data)
+                .then(res => {
+                    if (res.data.status == 'false') {
+                        this.pop_up(res.data.data, 'error');
+                    } else {
+                        // save user name and room id to session storage
+                        // and set session storage to expire after 1 hour
+                        sessionStorage.setItem('userName', this.userName);
+                        sessionStorage.setItem('roomId', this.roomId);
+                        sessionStorage.setItem('expire', Date.now() + 3600000);
+
+                        // redirect to room page
+                        this.redirectToRoom();
+                    }
+                })
+                .catch(err => {
+                    this.pop_up('伺服器錯誤，按 F12 查看詳細錯誤訊息', 'error');
+                    console.log(err);
+                });
+        },
+        pop_up(message, icon) {
+            Swal.fire({
+                width: 600,
+                padding: '2em',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false,
+                title: message,
+                confirmButtonText: '知道了',
+                confirmButtonColor: '#3085d6',
+                icon: icon,
+            });
+        },
+        redirectToRoom() {
+            setTimeout(() => {
+                // redirect to room page
+                window.location.href = `/room/${this.roomId}`;
+            }, 500);
+        },
     },
     delimiters: ['[[', ']]']
 }).mount('#app');
